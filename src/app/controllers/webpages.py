@@ -35,7 +35,7 @@ def people(request):
 def user_homepage(request):
     uid = request.REQUEST.get('id', None)
     if uid is None:
-        if request.session.has_key('user'):
+        if 'user' in request.session:
             user = User.objects.filter(deleted=0, id=request.session.get('user')['id'])
         else:
             return response404()
@@ -46,7 +46,7 @@ def user_homepage(request):
         return response404()
 
     user = user[0]
-    articles = Article.objects.filter(author_id=user.id)[: 10]
+    articles = Article.objects.filter(author_id=user.id).order_by('-time_create')[: 10]
 
     return render_to_response('./user_homepage.html', locals())
 

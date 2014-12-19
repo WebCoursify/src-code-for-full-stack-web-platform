@@ -41,6 +41,40 @@ def register(request):
     return None
 
 
+def get_articles(request):
+    """
+    :param request: contains the following parameters
+        query   : a search string. If provided, any document doesn't contain the string in either title or content should
+                  be excluded
+        sort    : a string. Valid values are: '[+/-]time' - sort by time ascending or descending; '[+/-title]' sort by
+                  title alphabetically ascending or descending
+        offset  : a number. If provided, skip the first <offset> documents
+        limit   : Return how many articles at most. If not provided, default is 10
+    :return: json array, each element is {"title": ..., "content": ..., "time": string in format of "%Y-%m-%d %H:%M:%D",
+             "author": {"username": ..., "id": ...} }
+    """
+    # TODO: Implement this
+    return None
+
+
+def create_article(request):
+    # TODO
+    pass
+
+
+def update_article(request, article_id):
+    """
+    :param request: contains the updated content
+    :param article_id: id of the target article
+    :return: json, {"success": True} or {"error": <error message>}
+    """
+    # TODO: Implement me
+    return None
+
+
+
+
+
 
 
 

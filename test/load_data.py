@@ -4,11 +4,7 @@ from monsql import MonSQL
 from datetime import datetime
 import hashlib
 from config import DATA_FILE
-
-def md5(string):
-	m = hashlib.md5()
-	m.update(string)
-	return m.hexdigest()
+from util import md5
 
 
 def load_data():

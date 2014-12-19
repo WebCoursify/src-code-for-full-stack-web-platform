@@ -1,4 +1,10 @@
 import json, urllib, urllib2
+import hashlib
+
+def md5(string):
+    m = hashlib.md5()
+    m.update(string)
+    return m.hexdigest()
 
 def proxy(url, method="get", query={}, post_as_string=False):
     method = method.lower()
@@ -16,5 +22,5 @@ def proxy(url, method="get", query={}, post_as_string=False):
     res_code = str(req.getcode())
     if res_code[0] != '2':
         raise Exception(res)
-        
+
     return res

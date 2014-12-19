@@ -1,34 +1,48 @@
-from config import MYSQL_HOST, MYSQL_PASSWORD, MYSQL_PORT, MYSQL_USERNAME, MYSQL_DB_NAME, WEBSITE_ADDRESS
+from config import MYSQL_HOST, MYSQL_PASSWORD, MYSQL_PORT, MYSQL_USERNAME, MYSQL_DB_NAME, WEBSITE_ADDRESS, DEFAULT_USER_NAME
 import unittest
-from util import proxy
+from util import proxy, md5
 from pyquery import PyQuery
 from load_data import load_data
 from datetime import datetime
+import requests, json
 
 class BasicTestCase(unittest.TestCase):
 
 	def setUp(self):
-		pass
-
-	def tearDown(self):
-		pass
-
-	def test_homepage(self):
 		data = load_data()
 		for item in data:
 			item['time'] = datetime.strptime(item['time'], '%Y-%m-%d %H:%M:%S')
+		self.data = sorted(data, key=lambda i: i['time'], reverse=True)
 
-		res = proxy(WEBSITE_ADDRESS)
-		doc = PyQuery(res)
+	def find_titles(self, html):
+		doc = PyQuery(html)
 
 		article_elems = doc('.article-list-item-main')
 
 		titles = sorted([elem.get('data-article-title') for elem in article_elems])
-		
-		groundtruth = sorted([item['title'] for item in sorted(data, key=lambda i: i['time'], reverse=True)][: len(titles)])
+		return titles
+
+	def test_index(self):
+		res = proxy(WEBSITE_ADDRESS)
+		titles = self.find_titles(res)
+		groundtruth = sorted([item['title'] for item in self.data][: len(titles)])
 
 		self.assertTrue(titles == groundtruth)
 
+	def test_homepage(self):
+		# Log in first
+		session = requests.Session()
+		res = session.get('%s/api/login?email=%s@gmail.com&password=%s' %(WEBSITE_ADDRESS, DEFAULT_USER_NAME, md5(DEFAULT_USER_NAME)))
+		result = res.json()
+
+		self.assertEqual(result.get('success', None), True)
+
+		# Request homepage
+		res = session.get('%s/homepage' %WEBSITE_ADDRESS)
+		titles = self.find_titles(res.text)
+
+		groundtruth = sorted([item['title'] for item in self.data if item['author'] is None][: len(titles)])
+		self.assertEqual(titles, groundtruth)
 
 if __name__ == '__main__':
 	unittest.main()
