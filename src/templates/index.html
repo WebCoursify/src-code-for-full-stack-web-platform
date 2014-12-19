@@ -1,0 +1,44 @@
+{% extends '_base.html' %}
+
+
+{% block body %}
+    <div class="row">
+        <!-- Blog Entries Column -->
+        <div class="col-md-8">
+
+            <ul class="nav nav-tabs">
+                <li role="presentation" {% if nav == 'feeds' %}class="active"{% endif %}><a href="/feeds">Feeds</a></li>
+                <li role="presentation" {% if nav == 'all' %}class="active"{% endif %}><a href="/articles">All Article</a></li>
+            </ul>
+
+            {% include 'includes/article_list.html' %}
+
+        </div>
+
+        <!-- Blog Sidebar Widgets Column -->
+        <div class="col-md-4">
+
+            <!-- Blog Search Well -->
+            <div class="well">
+                <h4>Blog Search</h4>
+                <form action="/articles" method="GET">
+                    <div class="input-group">
+                    
+                        <input type="text" class="form-control" name="query">
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="button">
+                                <span class="glyphicon glyphicon-search"></span>
+                        </button>
+                        </span>
+
+                    </div>
+                </form>
+                <!-- /.input-group -->
+            </div>
+
+        </div>
+
+    </div>
+    <!-- /.row -->
+
+{% endblock %}

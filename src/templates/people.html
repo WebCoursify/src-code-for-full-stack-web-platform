@@ -1,0 +1,90 @@
+{% extends '_base.html' %}
+
+{% block extra_head %}
+
+<style type="text/css">
+    .user-info{
+        margin-bottom: 10px;
+    }
+    .user-info img{
+        margin: 5px;
+    }
+</style>
+
+{% endblock %}
+
+
+{% block body %}
+    <div class="row">
+        <!-- Blog Entries Column -->
+        <div class="col-md-8">
+
+            <h1 class="page-header">
+                All Users
+                <small>Find those you're interested in</small>
+            </h1>
+
+            <!-- First Blog Post -->
+            <p>
+                {{ users | length }} users found.
+            </p>
+
+            {% for user_chunk in user_chunks %}
+                <div class="row">
+                    {% for user in user_chunk %}
+                        <div class="col-md-6 user-info">
+                            <div class="float-left">
+                                <img src="/static/img/ghost_person_40x40_v1.png">
+                            </div>
+                            <div class="float-left">
+                                <div>
+                                    <a href="/homepage?id={{user.id}}">
+                                        <b>{{user.username}}</b>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                </div>
+
+            {% endfor %}
+
+            <!-- Pager -->
+            <ul class="pager">
+                <li class="previous">
+                    <a href="#">&larr; Prev</a>
+                </li>
+                <li class="next">
+                    <a href="#">Next &rarr;</a>
+                </li>
+            </ul>
+
+        </div>
+
+        <!-- Blog Sidebar Widgets Column -->
+        <div class="col-md-4">
+
+            <div class="well">
+                <h4>People Search</h4>
+                <form action="/people" method="GET">
+                    <div class="input-group">
+                    
+                        <input type="text" class="form-control" name="query">
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="button">
+                                <span class="glyphicon glyphicon-search"></span>
+                        </button>
+                        </span>
+
+                    </div>
+                </form>
+                <!-- /.input-group -->
+            </div>
+
+        </div>
+
+    </div>
+    <!-- /.row -->
+
+{% endblock %}

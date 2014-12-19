@@ -1,0 +1,37 @@
+
+{% for article in articles %}
+    <div class="article-list-item-main" data-article-title="{{article.title}}">
+        <h2>
+            <a href="/article?id={{article.id}}">{{ article.title | safe }}</a>
+        </h2>
+        <p class="lead">
+            by <a href="/user?id={{article.author.id}}">{{ article.author.username }}</a>
+        </p>
+        <p><span class="glyphicon glyphicon-time"></span> Posted on {{ article.time_create | date:"Y-m-d H:i:s"}}</p>
+        
+        <hr>
+            <p>
+                {{ article.content | truncatewords_html:60 | safe}}
+            </p>
+            <a class="btn btn-primary" href="/article?id={{article.id}}">
+                Read More <span class="glyphicon glyphicon-chevron-right"></span>
+            </a>
+        <hr>
+    </div>
+{% empty %}
+
+    <h2>
+        There's currently no articles available
+    </h2>
+
+{% endfor %}
+
+<!-- Pager -->
+<ul class="pager">
+    <li class="previous">
+        <a href="#">&larr; Older</a>
+    </li>
+    <li class="next">
+        <a href="#">Newer &rarr;</a>
+    </li>
+</ul>
