@@ -1,7 +1,18 @@
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import render_to_response, redirect
+from datetime import datetime
 from app.models import *
 import json
+from django.views.decorators.csrf import csrf_exempt
+from django.db import transaction
+
+def login_required_otherwise_401(controller):
+    def inner(request):
+        if 'user' not in request.session:
+            return HttpResponse('Unauthorized', status=401)
+        else:
+            return controller(request)
+    return inner
 
 def login(request):
     email = request.REQUEST.get('email', None)
@@ -57,9 +68,30 @@ def get_articles(request):
     return None
 
 
+@csrf_exempt
+@login_required_otherwise_401
+@transaction.atomic
 def create_article(request):
-    # TODO
-    pass
+    user = request.session.get('user')
+    title = request.REQUEST['title']
+    content = request.REQUEST['content']
+    state = request.REQUEST['state']
+
+    if state not in ('public', 'draft'):
+        return HttpResponseBadRequest('invalid state')
+
+    if state == 'public':
+        state = Article.STATE_PUBLISHED
+    else:
+        state = Article.STATE_UNPUBLISHED
+
+    article = Article.objects.create(author_id=user['id'], title=title,
+                                     content=content, state=state, time_create=datetime.now(),
+                                     time_update=datetime.now())
+
+    return HttpResponse(json.dumps({'article': {'id': article.id}}))
+
+
 
 
 def update_article(request, article_id):

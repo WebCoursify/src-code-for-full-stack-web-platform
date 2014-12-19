@@ -4,6 +4,14 @@ from app.models import *
 import math
 
 
+def login_required(controller):
+    def inner(request):
+        if 'user' not in request.session:
+            return redirect('/login')
+        return controller(request)
+
+    return inner
+
 def response404():
     return redirect('/404')
 
@@ -13,7 +21,7 @@ def response404():
 
 
 def all_articles(request):
-    articles = Article.objects.filter(deleted=0).order_by('-time_create')[: 10]
+    articles = Article.objects.filter(deleted=0, state=Article.STATE_PUBLISHED).order_by('-time_create')[: 10]
     nav = 'all'
     return render_to_response('./index.html', locals())
 
@@ -46,7 +54,11 @@ def user_homepage(request):
         return response404()
 
     user = user[0]
-    articles = Article.objects.filter(author_id=user.id).order_by('-time_create')[: 10]
+    articles = Article.objects.filter(author_id=user.id)
+    if 'user' not in request.session or request.session.get('user')['id'] != user.id:
+        articles = articles.filter(state=Article.STATE_PUBLISHED)
+
+    articles = articles.order_by('-time_create')[: 10]
 
     return render_to_response('./user_homepage.html', locals())
 
@@ -77,13 +89,12 @@ def article_detail(request):
 
     return render_to_response('./article.html', locals())
 
-
+@login_required
 def create_article(request):
     """
     Render the page for creating an article
     Should required log on user
     """
-    # TODO: Add user authentication
     return render_to_response('./create_article.html', locals())
 
 
