@@ -1,8 +1,10 @@
 
 from django.http import HttpResponseNotAllowed, HttpResponseBadRequest
 from django.shortcuts import redirect
+from django.views.decorators.csrf import csrf_exempt
 
 
+@csrf_exempt
 def heart_beat(request):
     """
     Heart beat request:
@@ -18,6 +20,7 @@ def heart_beat(request):
     return None
 
 
+@csrf_exempt
 def create_file(request):
     """
     :param request: contains a file stream named "file"
@@ -38,6 +41,7 @@ def create_file(request):
     return None
 
 
+@csrf_exempt
 def get_file(request, file_id):
     """
     :param request: the request object
