@@ -30,4 +30,6 @@ urlpatterns = patterns('',
     # Practise
     url(r'^practise/heartbeat$', practise.heart_beat),
     # TODO: Define your url dispatcher for the rest of controllers!
+    url(r'^practise/file/create', practise.create_file),
+    url(r'^practise/file/(?P<file_id>[0-9a-zA-z]+)/get', practise.get_file),
 )

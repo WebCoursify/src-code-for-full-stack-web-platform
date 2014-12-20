@@ -1,8 +1,11 @@
 
-from django.http import HttpResponseNotAllowed, HttpResponseBadRequest, HttpResponse
+from django.http import HttpResponseNotAllowed, HttpResponseBadRequest, HttpResponse, HttpResponseNotFound
 from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 import uuid
+import os
+import json
+from web_dev_tutorial.settings import MEDIA_ROOT
 
 @csrf_exempt
 def heart_beat(request):
@@ -46,9 +49,15 @@ def create_file(request):
     if fs is None:
         return HttpResponseBadRequest('file is required')
 
+    uid = str(uuid.uuid1()).replace('-', '')
+    savepath = os.path.join(MEDIA_ROOT, 'practise', uid)
+    data = fs.read()
 
+    out_fs = open(savepath, 'wb')
+    out_fs.write(data)
+    out_fs.close()
 
-    return None
+    return HttpResponse(json.dumps({'id': uid}))
 
 
 @csrf_exempt
@@ -69,5 +78,16 @@ def get_file(request, file_id):
         A file saved in the media directory can be directly accessed given the relative url, so you can use
         "redirect".
     """
-    # TODO: Implement me
-    return None
+    if request.method != 'GET':
+        return HttpResponseNotAllowed(['GET'])
+
+    savepath = os.path.join(MEDIA_ROOT, 'practise', file_id)
+    if not os.path.isfile(savepath):
+        return HttpResponseNotFound('Invalid id')
+
+    read_fs = open(savepath, 'rb')
+
+    response = HttpResponse(read_fs)
+    response['Content-Disposition'] = 'attachment; filename=' + os.path.split(savepath)[1]
+
+    return response
