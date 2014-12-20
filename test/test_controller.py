@@ -60,3 +60,6 @@ class FilesTestCase(unittest.TestCase):
 		response = requests.get(get_file_url(1))
 		self.assertEqual(response.status_code, 404, 'Should return 404')
 
+
+if __name__ == '__main__':
+	unittest.main()
