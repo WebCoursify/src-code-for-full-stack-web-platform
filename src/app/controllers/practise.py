@@ -8,8 +8,8 @@ def heart_beat(request):
     Heart beat request:
     :param request contains a parameter named "username"
     :return a http response with html text <b>{username}</b>
-    Only allow http get method. If the request is made with some other method, return HttpResponseNotAllowed
-    When the request doesn't contain the appropriate parameter, return HttpResponseBadRequest
+    Only allow http get method. If the request is made with some other method, return HttpResponseNotAllowed(405)
+    When the request doesn't contain the appropriate parameter, return HttpResponseBadRequest(400)
     """
     # TODO: Implement me
     return None
@@ -23,7 +23,7 @@ def create_file(request):
     which takes the id as parameter, and return the file content. We think one way to implement this is:
     1. Create an unique id in place
     2. Save the file in the local file system, with a path that can be retrieved by the unique id
-    3. Return the unique id
+    3. Return the unique id(which should contains only alphanumeric characters)
     """
     # TODO: Implement me
     return None

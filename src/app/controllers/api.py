@@ -101,8 +101,6 @@ def create_article(request):
     return HttpResponse(json.dumps({'article': {'id': article.id}}))
 
 
-
-
 def update_article(request, article_id):
     """
     :param request: contains the updated fields. Refer to the create_article controller for fields contained
@@ -110,7 +108,7 @@ def update_article(request, article_id):
     :return: json, {"success": True} or {"error": <error message>}
     """
     # TODO: Implement me
-    return None
+    return HttpResponse(article_id)
 
 
 

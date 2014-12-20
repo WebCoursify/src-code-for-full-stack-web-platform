@@ -24,4 +24,9 @@ urlpatterns = patterns('',
     # API list
     url(r'^api/login$', api.login),
     url(r'^api/article/create$', api.create_article),
+    url(r'^api/article/(?P<article_id>[0-9]+)/update$', api.update_article),
+
+    # Practise
+    url(r'^practise/heartbeat$', practise.heart_beat),
+    # TODO: Define your url dispatcher for the rest of controllers!
 )
