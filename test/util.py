@@ -1,9 +1,9 @@
 import json, urllib, urllib2
 import hashlib
 
-def md5(string):
+def md5(stream):
     m = hashlib.md5()
-    m.update(string)
+    m.update(stream)
     return m.hexdigest()
 
 def proxy(url, method="get", query={}, post_as_string=False):
