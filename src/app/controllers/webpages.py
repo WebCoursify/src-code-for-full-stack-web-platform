@@ -12,6 +12,7 @@ def login_required(controller):
 
     return inner
 
+
 def response404():
     return redirect('/404')
 
@@ -21,21 +22,41 @@ def response404():
 
 
 def all_articles(request):
+    """
+    This naive implementation only return the 10 most recent public articles
+    A correct implementation should support the parameters as in api.get_articles
+    """
     articles = Article.objects.filter(deleted=0, state=Article.STATE_PUBLISHED).order_by('-time_create')[: 10]
-    nav = 'all'
+    nav = 'all'  # For correct tab display on the front end
     return render_to_response('./index.html', locals())
 
 
 def feeds(request):
-    nav = 'feeds'
+    """
+    This controller returns articles of the authors followed by the log on user
+    Need to support these parameters:
+    page       : 'first', 'last', or 0, 1, 2
+    count      : a number for return result. Default is 10
+    """
+    nav = 'feeds'  # For correct tab display on the front end
     return render_to_response('./index.html', locals())
 
 
 def people(request):
+    """
+    This naive implementation only return 10 users sorted by id
+    Should support query parameters:
+    query   : exclude users who don't contain the query in their name or description
+    page    : as usual
+    count   : as usual
+    """
     users = User.objects.filter(deleted=0)[: 10]
 
+    # The following code put retrieved users in two-item group, so it's easier to render two users
+    # each row in the front end
     chunk_size = 2
-    user_chunks = [users[i * chunk_size: (i + 1) * chunk_size] for i in range(int(math.ceil(len(users) / float(chunk_size))))]
+    user_chunks = [users[i * chunk_size: (i + 1) * chunk_size] for i in
+                   range(int(math.ceil(len(users) / float(chunk_size))))]
 
     return render_to_response('./people.html', locals())
 
@@ -71,7 +92,7 @@ def article_detail(request):
     2. The author's information
     3. All comments
     4. All likes
-    5. The at most five most recent articles of this author, with this article excluded
+    5. The most recent articles(5 at most) of this author, with this article excluded
 
     If the user is log on and is the author is the article, the button
     to publish/unpublish this article, the button to enter edit page,
@@ -94,7 +115,6 @@ def article_detail(request):
 def create_article(request):
     """
     Render the page for creating an article
-    Should required log on user
     """
     return render_to_response('./create_article.html', locals())
 

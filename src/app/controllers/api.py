@@ -6,6 +6,7 @@ import json
 from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
 
+
 def login_required_otherwise_401(controller):
     def inner(request):
         if 'user' not in request.session:
@@ -13,6 +14,7 @@ def login_required_otherwise_401(controller):
         else:
             return controller(request)
     return inner
+
 
 def login(request):
     email = request.REQUEST.get('email', None)
@@ -55,7 +57,7 @@ def register(request):
 def get_articles(request):
     """
     :param request: contains the following parameters
-        query   : a search string. If provided, any document doesn't contain the string in either title or content should
+        query   : a search string. If provided, any document doesn't contain the string title should
                   be excluded
         sort    : a string. Valid values are: '[+/-]time' - sort by time ascending or descending; '[+/-title]' sort by
                   title alphabetically ascending or descending
@@ -72,6 +74,13 @@ def get_articles(request):
 @login_required_otherwise_401
 @transaction.atomic
 def create_article(request):
+    """
+    request parameters:
+    title: string
+    content: string
+    state: string, either 'public' or 'draft'
+    :return: json, in form of {'success': True, 'article': {'id': ...}} or {'error': <error message>}
+    """
     user = request.session.get('user')
     title = request.REQUEST['title']
     content = request.REQUEST['content']
@@ -96,7 +105,7 @@ def create_article(request):
 
 def update_article(request, article_id):
     """
-    :param request: contains the updated content
+    :param request: contains the updated fields. Refer to the create_article controller for fields contained
     :param article_id: id of the target article
     :return: json, {"success": True} or {"error": <error message>}
     """
