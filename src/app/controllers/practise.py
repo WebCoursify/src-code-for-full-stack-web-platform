@@ -1,8 +1,8 @@
 
-from django.http import HttpResponseNotAllowed, HttpResponseBadRequest
+from django.http import HttpResponseNotAllowed, HttpResponseBadRequest, HttpResponse
 from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
-
+import uuid
 
 @csrf_exempt
 def heart_beat(request):
@@ -16,8 +16,13 @@ def heart_beat(request):
     When the request doesn't contain the appropriate parameter, return HttpResponseBadRequest(400)
 
     """
-    # TODO: Implement me
-    return None
+    if request.method != 'GET':
+        return HttpResponseNotAllowed(['GET'])
+    username = request.GET.get('username', None)
+    if username is None:
+        return HttpResponseBadRequest('username required')
+
+    return HttpResponse('<b>%s</b>' % username)
 
 
 @csrf_exempt
@@ -37,7 +42,12 @@ def create_file(request):
     3. Return the unique id(which should contains only alphanumeric characters)
 
     """
-    # TODO: Implement me
+    fs = request.FILES.get('file', None)
+    if fs is None:
+        return HttpResponseBadRequest('file is required')
+
+
+
     return None
 
 
@@ -57,7 +67,7 @@ def get_file(request, file_id):
         Take a look at the MEDIA_ROOT and MEDIA_URL options for Django settings.py. It's something very similar
         to the STATIC_ROOT and STATIC_URL, but for dynamic contents.
         A file saved in the media directory can be directly accessed given the relative url, so you can use
-        "redirect"
+        "redirect".
     """
     # TODO: Implement me
     return None
