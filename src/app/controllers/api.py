@@ -59,8 +59,8 @@ def get_articles(request):
                   be excluded
         sort    : a string. Valid values are: '[+/-]time' - sort by time ascending or descending; '[+/-title]' sort by
                   title alphabetically ascending or descending
-        offset  : a number. If provided, skip the first <offset> documents
-        limit   : Return how many articles at most. If not provided, default is 10
+        page    : a string or number. 'first', 'last' or 0, 1, 2, ... (start from zero)
+        count   : how many articles to return at most for this page. If not provided, default is 10
     :return: json array, each element is {"title": ..., "content": ..., "time": string in format of "%Y-%m-%d %H:%M:%D",
              "author": {"username": ..., "id": ...} }
     """

@@ -71,9 +71,11 @@ def article_detail(request):
     2. The author's information
     3. All comments
     4. All likes
+    5. The at most five most recent articles of this author, with this article excluded
+
     If the user is log on and is the author is the article, the button
     to publish/unpublish this article, the button to enter edit page,
-    the button to delete this article should be rendered
+    the button to delete this article should be rendered. Otherwise not rendered.
     """
     article_id = request.GET.get('id', None)
     if article_id is None:
@@ -84,7 +86,6 @@ def article_detail(request):
         return response404()
 
     article = article[0]
-
     # TODO: Add more implementations
 
     return render_to_response('./article.html', locals())
@@ -132,6 +133,10 @@ def logout(request):
     if 'user' in request.session:
         del request.session['user']
     return redirect('/')
+
+################
+# Other stuffs #
+################
 
 
 def about(request):
