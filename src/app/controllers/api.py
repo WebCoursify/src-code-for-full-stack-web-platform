@@ -79,7 +79,7 @@ def create_article(request):
     request parameters:
     title: string
     content: string
-    state: string, either 'public' or 'draft'
+    state: string, either 'published' or 'draft'
     :return: json, in form of {'success': True, 'article': {'id': ...}} or {'error': <error message>}
     """
     user = request.session.get('user')
@@ -87,10 +87,10 @@ def create_article(request):
     content = request.REQUEST['content']
     state = request.REQUEST['state']
 
-    if state not in ('public', 'draft'):
+    if state not in ('published', 'draft'):
         return HttpResponseBadRequest('invalid state')
 
-    if state == 'public':
+    if state == 'published':
         state = Article.STATE_PUBLISHED
     else:
         state = Article.STATE_UNPUBLISHED
