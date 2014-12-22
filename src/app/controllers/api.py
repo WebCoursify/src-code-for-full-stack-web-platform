@@ -7,6 +7,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
 import hashlib
 
+##############
+# Decorators #
+##############
 
 def md5(stream):
     m = hashlib.md5()
