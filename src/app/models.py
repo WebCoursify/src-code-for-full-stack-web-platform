@@ -22,6 +22,18 @@ class User(models.Model):
     follows  = models.ManyToManyField('User')
     deleted  = models.BooleanField(default=0)
 
+    def get_followers(self):
+        return self.user_set.all()
+
+    def get_followings(self):
+        return self.follows.all()
+
+    def add_following(self, user_to_follow):
+        self.follows.add(user_to_follow)
+
+    def remove_following(self, user_to_cancel_follow):
+        self.follows.remove(user_to_cancel_follow)
+
 
     def get_followers(self):
         return self.user_set.all()
