@@ -26,6 +26,8 @@ urlpatterns = patterns('',
     url(r'^api/article/list$', api.get_articles),
     url(r'^api/article/create$', api.create_article),
     url(r'^api/article/(?P<article_id>[0-9]+)/update$', api.update_article),
+    url(r'^api/article/(?P<article_id>[0-9]+)/set_state$', api.update_article),
+    url(r'^api/article/(?P<article_id>[0-9]+)/delete$', api.delete_article),
 
     # Practise
     url(r'^practise/heartbeat$', practise.heart_beat),

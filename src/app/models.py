@@ -22,7 +22,7 @@ class ArticleQuerySet(models.query.QuerySet):
 
 
 class ArticleManager(models.Manager):
-    def get_query_set(self):
+    def get_queryset(self):
         return ArticleQuerySet(self.model)
 
     def search(self, query=None, sort=None, page=None, count=None, published=None):

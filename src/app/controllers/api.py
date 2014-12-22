@@ -21,6 +21,26 @@ def login_required_otherwise_401(controller):
             return controller(request)
     return inner
 
+
+def allow_methods(methods):
+    methods = [method.upper() for method in methods]
+    def decorator(controller):
+
+        def inner(*args, **kwargs):
+            request = args[0]
+            if request.method not in methods:
+                return HttpResponseNotAllowed(methods)
+
+            return controller(*args, **kwargs)
+
+        if getattr(controller, 'csrf_exempt', False):
+            inner.csrf_exempt = True
+
+        return inner
+    return decorator
+
+
+
 def login(request):
     email = get_argument(request, 'email', None)
     password = get_argument(request, 'password', None)
@@ -98,7 +118,7 @@ def get_articles(request):
     if not count.isdigit():
         return HttpResponseBadRequest('Invalid record count')
 
-    print query, sort, page, count
+    # print query, sort, page, count
 
     # Start searching
     result = Article.objects.search(query=query, sort=sort, page=int(page), count=int(count), published=True)
@@ -140,14 +160,79 @@ def create_article(request):
     return HttpResponse(json.dumps({'article': {'id': article.id}}))
 
 
+def article_operation(author_required=False):
+    def decorator(controller):
+
+        def inner(*args, **kwargs):
+            request, article_id = args[0], kwargs['article_id']
+            print article_id
+
+            article = Article.objects.filter(id=int(article_id), deleted=0)
+            if not article.exists():
+                return HttpResponseNotFound('Article Not found')
+            article = article[0]
+            if author_required:
+                if 'user' not in request.session:
+                    return HttpResponse('Unauthorized', status=401)
+                if request.session.get('user')['id'] != article.author_id:
+                    return HttpResponseNotAllowed('Open allowed for author')
+
+            return controller(*args, **kwargs)
+
+        if getattr(controller, 'csrf_exempt', False):
+            inner.csrf_exempt = True
+
+        return inner
+
+    return decorator
+
+
+@csrf_exempt
+@transaction.atomic
+@article_operation(author_required=True)
+@allow_methods(['POST'])
 def update_article(request, article_id):
     """
     :param request: contains the updated fields. Refer to the create_article controller for fields contained
     :param article_id: id of the target article
     :return: json, {"success": True} or {"error": <error message>}
     """
-    # TODO: Implement me
-    return HttpResponse(article_id)
+    article = Article.objects.get(id=int(article_id))
+    data = request.REQUEST
+    if 'title' in data:
+        article.title = data['title']
+        print article.title, article_id
+
+    if 'content' in data:
+        article.content = data['content']
+
+    if 'state' in data:
+        if data['state'] not in ('published', 'draft'):
+            return HttpResponseBadRequest('invalid state')
+        if data['state'] == 'published':
+            article.state = Article.STATE_PUBLISHED
+        else:
+            article.state = Article.STATE_UNPUBLISHED
+
+    article.time_update = datetime.now()
+    article.save()
+
+    article = Article.objects.get(id=int(article_id))
+
+    return HttpResponse(json.dumps({'success': True, 'article': {'id': article.id}}))
+
+
+@allow_methods(['POST'])
+@article_operation(author_required=True)
+@csrf_exempt
+@transaction.atomic
+def delete_article(request, article_id):
+    article = Article.objects.get(id=article_id)
+    article.deleted = 1
+    article.save()
+    return HttpResponse(json.dumps({'success': True}))
+
+
 
 
 
