@@ -75,8 +75,38 @@ def get_articles(request):
              "author": {"username": ..., "id": ...} }
     Only support GET method
     """
-    # TODO: Implement this
-    return None
+
+    # Do integrity check
+    if request.method != 'GET':
+        return HttpResponseNotAllowed(['GET'])
+
+    query = request.GET.get('query', None)
+    sort  = request.GET.get('sort', '-time')
+    # print request.GET
+    if sort not in ('-time', '+time', '-title', '+title'):
+        return HttpResponseBadRequest('Invalid sort option')
+    if sort[1:] == 'time':
+        sort += '_create'  # Turn to +/- time_create
+    if sort[0] == '+':
+        sort = sort[1: ]
+
+    page = request.GET.get('page', '0')
+    if not page.isdigit():
+        return HttpResponseBadRequest('Invalid page num')
+
+    count = request.GET.get('count', '10')
+    if not count.isdigit():
+        return HttpResponseBadRequest('Invalid record count')
+
+    print query, sort, page, count
+
+    # Start searching
+    result = Article.objects.search(query=query, sort=sort, page=int(page), count=int(count), published=True)
+    response_data = [{'id': article.id, 'title': article.title, 'content': article.content,
+                      'time': article.time_create.strftime('%Y-%m-%d %H:%M:%S'),
+                      'author': {'id': article.author.id, 'username': article.author.username}} for article in result]
+
+    return HttpResponse(json.dumps(response_data))
 
 
 @csrf_exempt
