@@ -29,6 +29,11 @@ urlpatterns = patterns('',
     url(r'^api/article/(?P<article_id>[0-9]+)/set_state$', api.update_article),
     url(r'^api/article/(?P<article_id>[0-9]+)/delete$', api.delete_article),
 
+    url(r'^api/user/follow$', api.follow),
+    url(r'^api/user/unfollow$', api.unfollow),
+    url(r'^api/user/followers', api.get_followers),
+    url(r'^api/user/followings', api.get_followings),
+
     # Practise
     url(r'^practise/heartbeat$', practise.heart_beat),
     # TODO: Define your url dispatcher for the rest of controllers!
