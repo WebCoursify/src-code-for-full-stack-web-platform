@@ -70,7 +70,6 @@ def article_operation(author_required=False):
             inner.csrf_exempt = True
 
         return inner
-
     return decorator
 
 
@@ -257,7 +256,6 @@ def update_article(request, article_id):
 
     return HttpResponse(json.dumps({'success': True, 'article': {'id': article.id}}))
 
-
 @csrf_exempt
 @allow_methods(['POST'])
 @article_operation(author_required=True)
@@ -267,6 +265,7 @@ def delete_article(request, article_id):
     article.deleted = 1
     article.save()
     return HttpResponse(json.dumps({'success': True}))
+
 
 ###############
 # Follow APIs #
@@ -342,8 +341,3 @@ def get_followings(request):
     followings = user.get_followings()
 
     return HttpResponse(json.dumps([{'id': u.id, 'username': u.username} for u in followings]))
-
-
-
-
-
