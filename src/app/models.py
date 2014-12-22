@@ -1,16 +1,38 @@
 from django.db import models
 
 
+class UserManager(models.Manager):
+    def find_by_id(self, id):
+        result = self.filter(id=id, deleted=0)
+        if result.exists():
+            return result[0]
+        else:
+            return None
+
 class User(models.Model):
     ROLE_ADMIN  = 1
     ROLE_AUTHOR = 2
 
+    objects  = UserManager()
     username = models.CharField(max_length=50)
     email    = models.CharField(max_length=50, unique=True)
     password = models.CharField(max_length=50)
     description = models.CharField(max_length=512, null=True)
     role     = models.SmallIntegerField()
+    follows  = models.ManyToManyField('User')
     deleted  = models.BooleanField(default=0)
+
+    def get_followers(self):
+        return self.user_set.all()
+
+    def get_followings(self):
+        return self.follows.all()
+
+    def add_following(self, user_to_follow):
+        self.follows.add(user_to_follow)
+
+    def remove_following(self, user_to_cancel_follow):
+        self.follows.remove(user_to_cancel_follow)
 
 
 class ArticleQuerySet(models.query.QuerySet):
