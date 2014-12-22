@@ -14,7 +14,9 @@ def login_required(controller):
 
 
 def response404():
-    return redirect('/404')
+    response = render_to_response('./404.html', locals())
+    response['status'] = 404
+    return response
 
 ###################################
 # Main pages, related to articles #

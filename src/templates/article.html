@@ -6,6 +6,15 @@
         <!-- Blog Entries Column -->
         <div class="col-md-8">
             
+            <!-- Please DON'T change this part. This is for auto-testing! -->
+            <div id="article-info-invisible" 
+                data-title="{{ article.title | safe }}"
+                data-status="{% if article.state == 1 %}draft{% elif article.state == 2 %}published{% else %}error{% endif %}"
+                data-id="{{ article.id }}"
+                data-content="{{ article.content | safe}}"
+                style="display:none;"></div>
+            <!-- Untouchable Region Ends-->
+
             <h2>
                 {{ article.title | safe }}
             </h2>
