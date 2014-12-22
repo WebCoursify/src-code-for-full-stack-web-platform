@@ -11,15 +11,19 @@ def md5(stream):
 
 def proxy(url, method="get", query={}, post_as_string=False):
     method = method.lower()
-    
+    valid_query = {}
+    for key, val in query.items():
+        if val is not None:
+            valid_query[key] = val
+            
     if method == "post":
         if post_as_string:
-            data = json.dumps(query)
+            data = json.dumps(valid_query)
         else:
-            data = urllib.urlencode(query)
+            data = urllib.urlencode(valid_query)
             req = urllib2.urlopen(url=url, data=data)
     elif method == "get":
-        para = urllib.urlencode(query)
+        para = urllib.urlencode(valid_query)
         req = urllib.urlopen(url + "?" + para)
     res = req.read()
     res_code = str(req.getcode())

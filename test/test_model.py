@@ -5,6 +5,9 @@ from monsql import MonSQL, ASCENDING, DESCENDING
 from util import proxy, BaseTestCase
 import random
 import uuid
+import json
+import MySQLdb
+import time
 
 def random_string():
     return str(uuid.uuid1())
@@ -12,6 +15,7 @@ def random_string():
 class ModelBaseTestCase(BaseTestCase):
     def setUp(self):
         self.db = MonSQL(MYSQL_HOST, MYSQL_PORT, MYSQL_USERNAME, MYSQL_PASSWORD, MYSQL_DB_NAME)
+        self.db.commit()
 
     def tearDown(self):
         self.db.close()
@@ -42,18 +46,23 @@ class SearchTestCase(ModelBaseTestCase):
             if count is None: count = 10
             if sort is None: sort = '-time'
 
-            filter = {}
+            filter = {'state': 2}
             if query:
                 filter['title'] = {'$contains': query}
 
             sort_tag, sort_field = sort[0], sort[1: ]
+            if sort_field == 'time':
+                sort_field = 'time_create'
+
             if sort_tag == '+': 
                 sorting = (sort_field, ASCENDING)
             elif sort_tag == '-': 
                 sorting = (sort_field, DESCENDING)
 
             articles = article_table.find(filter=filter, sort=[sorting], skip=page * count, limit=count)
-            real_ids = [item['id'] for item in articles]
+            real_ids = [item.id for item in articles]
+            # print response_ids
+            # print real_ids
 
             self.assertEqual(response_ids, real_ids, 'Article search test fails at the case of (%s,%s,%s,%s)' \
                              %(query, sort, page, count))
@@ -72,9 +81,10 @@ class ArticleTestCase(ModelBaseTestCase):
         user = self.db.get(USER_TABLE_NAME).find_one({'email': DEFAULT_USER_NAME + '@gmail.com'})
 
         article_table = self.db.get(ARTICLE_TABLE_NAME)
-        articles = article_table.find({'author_id': user.id})[: 10]
+        articles = article_table.find({'author_id': user.id, 'deleted': 0})[: 10]
 
         for article in articles:
+
             self.assertTrue(article.state in (1, 2))
             update_url = get_update_url(article.id)
 
@@ -89,6 +99,7 @@ class ArticleTestCase(ModelBaseTestCase):
             response = session.post(update_url, data={'title': random_title, 'content': random_content, 'state': new_state})
             self.assertTrue(response.json().get('success', None))
 
+            article_table.commit() # This is important because otherwise it won't see the newest result
             updated_article = article_table.find_one({'id': article.id})
 
             self.assertEqual(updated_article.title, random_title)
@@ -100,7 +111,9 @@ class ArticleTestCase(ModelBaseTestCase):
 
             # Test changing state
             for i in range(2):
+                article_table.commit()
                 current_article = article_table.find_one({'id': article.id})
+
                 if current_article.state == 1:
                     new_state = 'published'
                 elif current_article.state == 2:
@@ -109,7 +122,9 @@ class ArticleTestCase(ModelBaseTestCase):
                 response = session.post(get_set_state_url(current_article.id), data={'state': new_state})
                 self.assertTrue(response.json().get('success', None))
 
+                article_table.commit()
                 updated_article = article_table.find_one({'id': article.id})
+
                 if current_article.state == 1:
                     self.assertEqual(updated_article.state, 2)
                 elif current_article.state == 2:
@@ -132,15 +147,16 @@ class ArticleTestCase(ModelBaseTestCase):
 
         for article in articles:
             # Before delete, make sure we can visit this article
-            response = session.get(WEBSITE_ADDRESS + '/article?id=' + article.id)
+            response = session.get(WEBSITE_ADDRESS + '/article?id=' + str(article.id))
             self.assertEqual(response.status_code, 200)
 
             # Delete it
             response = session.post(get_delete_url(article.id))
+            # print response.text
             self.assertTrue(response.json().get('success', None))
 
             # Now visit again will be 404
-            response = session.get(WEBSITE_ADDRESS + '/article?id=' + article.id)
+            response = session.get(WEBSITE_ADDRESS + '/article?id=' + str(article.id))
             self.assertEqual(response.status_code, 404)
             
 
@@ -198,9 +214,7 @@ class FollowRelationTestCase(ModelBaseTestCase):
         pass
 
 
-
-
-
-
 if __name__ == '__main__':
-    main()
+    unittest.main()
+
+
