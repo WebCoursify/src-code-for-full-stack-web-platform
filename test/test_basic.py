@@ -1,12 +1,12 @@
 from config import MYSQL_HOST, MYSQL_PASSWORD, MYSQL_PORT, MYSQL_USERNAME, MYSQL_DB_NAME, WEBSITE_ADDRESS, DEFAULT_USER_NAME
 import unittest
-from util import proxy, md5
+from util import proxy, md5, BaseTestCase
 from pyquery import PyQuery
 from load_data import load_data
 from datetime import datetime
 import requests, json
 
-class BasicTestCase(unittest.TestCase):
+class BasicTestCase(BaseTestCase):
 
 	def setUp(self):
 		data = load_data()
@@ -31,11 +31,7 @@ class BasicTestCase(unittest.TestCase):
 
 	def test_homepage(self):
 		# Log in first
-		session = requests.Session()
-		res = session.get('%s/api/login?email=%s@gmail.com&password=%s' %(WEBSITE_ADDRESS, DEFAULT_USER_NAME, md5(DEFAULT_USER_NAME)))
-		result = res.json()
-
-		self.assertEqual(result.get('success', None), True)
+		session = self.login()
 
 		# Request homepage
 		res = session.get('%s/homepage' %WEBSITE_ADDRESS)
@@ -43,6 +39,9 @@ class BasicTestCase(unittest.TestCase):
 
 		groundtruth = sorted([item['title'] for item in self.data if item['author'] is None][: len(titles)])
 		self.assertEqual(titles, groundtruth)
+
+
+
 
 if __name__ == '__main__':
 	unittest.main()
