@@ -9,6 +9,9 @@ import hashlib
 from controller_common import get_argument
 
 
+##############
+# Decorators #
+##############
 
 def md5(stream):
     m = hashlib.md5()
