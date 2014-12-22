@@ -13,6 +13,7 @@ from controller_common import get_argument
 # Decorators #
 ##############
 
+
 def md5(stream):
     m = hashlib.md5()
     m.update(stream)
@@ -70,6 +71,7 @@ def article_operation(author_required=False):
             inner.csrf_exempt = True
 
         return inner
+
     return decorator
 
 
@@ -192,6 +194,7 @@ def create_article(request):
 
     return HttpResponse(json.dumps({'article': {'id': article.id}}))
 
+    
 def article_operation(author_required=False):
     def decorator(controller):
 
@@ -217,6 +220,19 @@ def article_operation(author_required=False):
         return inner
 
     return decorator
+<<<<<<< 78345cfe2bbc2a49914213ba15cd88627d286128
+=======
+<<<<<<< 8850fb21c0627c4139d288db1cf64a7a816d01c8
+>>>>>>> finish model-article
+=======
+
+>>>>>>> finish follow relation
+=======
+>>>>>>> finish model-article
+=======
+
+>>>>>>> finish follow relation
+>>>>>>> finish follow relation
 
 
 @csrf_exempt
@@ -331,6 +347,75 @@ def get_followers(request):
 @login_required_otherwise_401
 def get_followings(request):
     user_id = get_argument(request, 'user_id')
+    if user_id is None:
+        user_id = request.session.get('user')['id']
+    else:
+        user_id = int(user_id)
+
+    user = User.objects.find_by_id(user_id)
+
+    followings = user.get_followings()
+
+    return HttpResponse(json.dumps([{'id': u.id, 'username': u.username} for u in followings]))
+
+###############
+# Follow APIs #
+###############
+
+@csrf_exempt
+@login_required_otherwise_401
+@allow_methods(['POST'])
+def follow(request):
+    data = request.REQUEST
+    if 'target_user_id' not in data:
+        return HttpResponseBadRequest('target_user_id must be provided')
+
+    target_user = User.objects.find_by_id(int(data['target_user_id']))
+    if target_user is None:
+        return HttpResponseNotFound('target user not found')
+
+    user = User.objects.find_by_id(request.session.get('user')['id'])
+    user.add_following(target_user)
+
+    return HttpResponse(json.dumps({'success': True}))
+
+
+@csrf_exempt
+@login_required_otherwise_401
+@allow_methods(['POST'])
+def unfollow(request):
+    data = request.REQUEST
+    if 'target_user_id' not in data:
+        return HttpResponseBadRequest('target_user_id must be provided')
+
+    target_user = User.objects.find_by_id(int(data['target_user_id']))
+    if target_user is None:
+        return HttpResponseNotFound('target user not found')
+
+    user = User.objects.find_by_id(request.session.get('user')['id'])
+    user.remove_following(target_user)
+
+    return HttpResponse(json.dumps({'success': True}))
+
+@login_required_otherwise_401
+@allow_methods(['GET'])
+def get_followers(request):
+    user_id = request.REQUEST.get('user_id', None)
+    if user_id is None:
+        user_id = request.session.get('user')['id']
+    else:
+        user_id = int(user_id)
+
+    user = User.objects.find_by_id(user_id)
+
+    followers = user.get_followers()
+
+    return HttpResponse(json.dumps([{'id': u.id, 'username': u.username} for u in followers]))
+
+@allow_methods(['GET'])
+@login_required_otherwise_401
+def get_followings(request):
+    user_id = request.REQUEST.get('user_id', None)
     if user_id is None:
         user_id = request.session.get('user')['id']
     else:
