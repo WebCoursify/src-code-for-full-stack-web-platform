@@ -34,7 +34,6 @@ def login_required_otherwise_401(controller):
 def allow_methods(methods):
     methods = [method.upper() for method in methods]
     def decorator(controller):
-
         def inner(*args, **kwargs):
             request = args[0]
             if request.method not in methods:
@@ -63,8 +62,10 @@ def article_operation(author_required=False):
 
             return controller(*args, **kwargs)
 
-        return inner
+        if getattr(controller, 'csrf_exempt', False):
+            inner.csrf_exempt = True
 
+        return inner
     return decorator
 
 
@@ -188,7 +189,35 @@ def create_article(request):
     return HttpResponse(json.dumps({'article': {'id': article.id}}))
 
 
+<<<<<<< 1719af997da69b934c2d476b2a0e776efb290812
 
+=======
+def article_operation(author_required=False):
+    def decorator(controller):
+
+        def inner(*args, **kwargs):
+            request, article_id = args[0], kwargs['article_id']
+            print article_id
+
+            article = Article.objects.filter(id=int(article_id), deleted=0)
+            if not article.exists():
+                return HttpResponseNotFound('Article Not found')
+            article = article[0]
+            if author_required:
+                if 'user' not in request.session:
+                    return HttpResponse('Unauthorized', status=401)
+                if request.session.get('user')['id'] != article.author_id:
+                    return HttpResponseNotAllowed('Open allowed for author')
+
+            return controller(*args, **kwargs)
+
+        if getattr(controller, 'csrf_exempt', False):
+            inner.csrf_exempt = True
+
+        return inner
+
+    return decorator
+>>>>>>> finish model-article
 
 
 @csrf_exempt
@@ -229,9 +258,15 @@ def update_article(request, article_id):
     return HttpResponse(json.dumps({'success': True, 'article': {'id': article.id}}))
 
 
+<<<<<<< 1719af997da69b934c2d476b2a0e776efb290812
 @csrf_exempt
 @allow_methods(['POST'])
 @article_operation(author_required=True)
+=======
+@allow_methods(['POST'])
+@article_operation(author_required=True)
+@csrf_exempt
+>>>>>>> finish model-article
 @transaction.atomic
 def delete_article(request, article_id):
     article = Article.objects.get(id=article_id)
@@ -240,6 +275,7 @@ def delete_article(request, article_id):
     return HttpResponse(json.dumps({'success': True}))
 
 
+<<<<<<< 1719af997da69b934c2d476b2a0e776efb290812
 
 
 ###############
@@ -316,6 +352,8 @@ def get_followings(request):
     followings = user.get_followings()
 
     return HttpResponse(json.dumps([{'id': u.id, 'username': u.username} for u in followings]))
+=======
+>>>>>>> finish model-article
 
 
 
