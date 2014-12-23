@@ -8,6 +8,7 @@ import uuid
 import json
 import MySQLdb
 import time
+from datetime import datetime
 
 def random_string():
     return str(uuid.uuid1())
@@ -46,7 +47,7 @@ class SearchTestCase(ModelBaseTestCase):
             if count is None: count = 10
             if sort is None: sort = '-time'
 
-            filter = {'state': 2}
+            filter = {'state': 2, 'deleted': 0}
             if query:
                 filter['title'] = {'$contains': query}
 
@@ -61,8 +62,7 @@ class SearchTestCase(ModelBaseTestCase):
 
             articles = article_table.find(filter=filter, sort=[sorting], skip=page * count, limit=count)
             real_ids = [item.id for item in articles]
-            # print response_ids
-            # print real_ids
+            
 
             self.assertEqual(response_ids, real_ids, 'Article search test fails at the case of (%s,%s,%s,%s)' \
                              %(query, sort, page, count))
@@ -171,7 +171,15 @@ class FollowRelationTestCase(ModelBaseTestCase):
         if user_id is not None:
             data['user_id'] = user_id
 
-        response = session.get(WEBSITE_ADDRESS + '/api/user/followers', data={})
+        response = session.get(WEBSITE_ADDRESS + '/api/user/followers', params=data)
+        return response.json()
+
+    def get_following_list(self, session, user_id=None):
+        data = {}
+        if user_id is not None:
+            data['user_id'] = user_id
+
+        response = session.get(WEBSITE_ADDRESS + '/api/user/followings', params=data)
         return response.json()
 
     def set_unfollow(self, session, target_user_id):
@@ -189,29 +197,119 @@ class FollowRelationTestCase(ModelBaseTestCase):
             
             for user_b in user_group_b:
 
-                self.set_follow(session, user_b)
+                self.set_follow(session, user_b.id)
+                self.set_follow(session, user_b.id) # Should not yield error
 
+            self.assertEqual(sorted([u['id'] for u in self.get_following_list(session)]), 
+                             sorted([u.id for u in user_group_b]))
+
+        for user_b in user_group_b:
+            session = self.login(user_b.email, user_b.password)
             self.assertEqual(sorted([u['id'] for u in self.get_follower_list(session)]), 
-                             sorted([u.id for u in user_b]))
+                             sorted([u.id for u in user_group_a]))
 
         session = self.login() # Default user
         for user_a in user_group_a:
-            self.assertEqual(sorted([u['id'] for u in self.get_follower_list(session, target_user_id=user_a.id)]), 
-                             sorted([u.id for u in user_b]))
+            self.assertEqual(sorted([u['id'] for u in self.get_following_list(session, user_id=user_a.id)]), 
+                             sorted([u.id for u in user_group_b]))
 
+        for user_b in user_group_b:
+            self.assertEqual(sorted([u['id'] for u in self.get_follower_list(session, user_id=user_b.id)]), 
+                             sorted([u.id for u in user_group_a]))
 
         # Test unfollow
         for user_a in user_group_a:
             session = self.login(user_a.email, user_a.password)
             
             for user_b in user_group_b:
-                self.set_unfollow(session, user_b)
+                self.set_unfollow(session, user_b.id)
+                self.set_unfollow(session, user_b.id) # Should not yield error
 
-            self.assertEqual(self.get_follower_list(session), [])
+            self.assertEqual(self.get_following_list(session), [])
+
+        for user_b in user_group_b:
+            self.assertEqual(self.get_follower_list(session, user_id=user_b.id), [])
+
+    def test_incorrect_request(self):
+        users = self.db.get(USER_TABLE_NAME).find({'deleted': 0}, limit=20)
+
+        user = users[0]
+
+        session = self.login(user.email, user.password)
+        response = session.post(WEBSITE_ADDRESS + '/api/user/follow', data={'target_user_id': user.id})
+        self.assertEqual(response.status_code, 400)
+
+        response = session.post(WEBSITE_ADDRESS + '/api/user/unfollow', data={'target_user_id': user.id})
+        self.assertEqual(response.status_code, 400)
+
+
+class FollowThroughputTestCase(ModelBaseTestCase):
+    def set_follow(self, session, target_user_id):
+        response = session.post(WEBSITE_ADDRESS + '/api/user/follow', data={'target_user_id': target_user_id})
+        self.assertTrue(response.json().get('success', None))
+
+    def get_follower_list(self, session, user_id=None):
+        data = {}
+        if user_id is not None:
+            data['user_id'] = user_id
+
+        response = session.get(WEBSITE_ADDRESS + '/api/user/followers', params=data)
+        return response.json()
+
+    def get_following_list(self, session, user_id=None):
+        data = {}
+        if user_id is not None:
+            data['user_id'] = user_id
+
+        response = session.get(WEBSITE_ADDRESS + '/api/user/followings', params=data)
+        return response.json()
+
+    def set_unfollow(self, session, target_user_id):
+        response = session.post(WEBSITE_ADDRESS + '/api/user/unfollow', data={'target_user_id': target_user_id})
+        self.assertTrue(response.json().get('success', None))
 
     def test_follow_throughput(self):
-        # TODO:
-        pass
+        all_users = self.db.get(USER_TABLE_NAME).find({'deleted': 0})
+        
+
+        user_group_a = all_users[: len(all_users) / 2]
+        user_group_b = all_users[len(all_users) / 2: ]
+
+        print len(user_group_a), len(user_group_b)
+
+        for user_a in user_group_a:
+            session = self.login(user_a.email, user_a.password)
+            for user_b in user_group_b:
+                self.set_follow(session, user_b.id)
+
+        test_count = 1000
+        time_start = datetime.now()
+        for i in range(test_count):
+            idx_a = random.randint(0, len(user_group_a) - 1)
+            user_a = user_group_a[idx_a]
+            session = self.login(user_a.email, user_a.password)
+
+            follower_list = self.get_following_list(session)
+            random.shuffle(follower_list)
+
+            for target_user_id in [u['id'] for u in follower_list[: 10]]:
+                self.set_unfollow(session, target_user_id=target_user_id)
+                self.set_follow(session, target_user_id=target_user_id)
+
+            if i % 10 == 0:
+                print 'Test %d done' % i 
+                
+        time_end = datetime.now()
+        second_del = (time_end - time_start).total_seconds()
+        print "TPS:", test_count / second_del
+
+        # Clear all
+        for user_a in user_group_a:
+            session = self.login(user_a.email, user_a.password)
+            for user_b in user_group_b:
+                self.set_unfollow(session, user_b.id)
+
+
 
 
 if __name__ == '__main__':

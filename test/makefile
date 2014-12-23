@@ -17,8 +17,8 @@ load:
 	python test_controller.py FilesTestCase
 
 # Chapter3: Model
-3_model:
-	python test_model.py
+3_model: 
+	python test_model.py SearchTestCase ArticleTestCase FollowRelationTestCase
 
 3_model_search:
 	python test_model.py SearchTestCase
@@ -28,6 +28,9 @@ load:
 
 3_model_follow:
 	python test_model.py FollowRelationTestCase
+
+3_model_follow_throughput:
+	python test_model.py FollowThroughputTestCase
 
 
 

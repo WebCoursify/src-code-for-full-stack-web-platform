@@ -15,6 +15,7 @@ def main():
 	data = load_data()
 
 	db = MonSQL(MYSQL_HOST, MYSQL_PORT, username=MYSQL_USERNAME, password=MYSQL_PASSWORD, dbname=MYSQL_DB_NAME)
+	db.set_foreign_key_check(False)
 	user_table, article_table = db.get(USER_TABLE_NAME), db.get(ARTICLE_TABLE_NAME)
 
 	article_table.remove()
@@ -29,6 +30,9 @@ def main():
 	# Insert users
 	users = [{'username': username, 'password': md5(username), 'email': '%s@gmail.com' %username, 'role': 2, 'deleted': 0} \
 	          for username in set([item['author'] for item in data])]
+	# Inser a bunch of zombie users
+	#users += [{'username': username, 'password': md5(username), 'email': '%s@gmail.com' %username, 'role': 2, 'deleted': 0} \
+	#          for username in ['zombie.user%d' % i for i in range(1000)]]
 
 	user_ids = user_table.insert(users)
 	db.commit()
