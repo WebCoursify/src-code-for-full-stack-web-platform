@@ -22,6 +22,7 @@ class User(models.Model):
     follows  = models.ManyToManyField('User')
     deleted  = models.BooleanField(default=0)
 
+
     def get_followers(self):
         return self.user_set.all()
 
@@ -33,6 +34,47 @@ class User(models.Model):
 
     def remove_following(self, user_to_cancel_follow):
         self.follows.remove(user_to_cancel_follow)
+    """
+
+
+    def get_followers(self):
+        return User.objects.raw('''select u.id,username,email,password,description,role,deleted from
+                                app_user u inner join app_userfollowuser re
+                                on u.id=re.follower_id and re.following_id=%d
+                                where re.followed=1''' % self.id)
+
+    def get_followings(self):
+        return User.objects.raw('''select u.id,username,email,password,description,role,deleted from app_user u
+                                inner join app_userfollowuser re
+                                on u.id=re.following_id and re.follower_id=%d
+                                where re.followed=1''' % self.id)
+
+    def add_following(self, user_to_follow):
+        relation = UserFollowUser.objects.raw('''select * from app_userfollowuser re
+                                               where re.follower_id=%d and re.following_id=%d'''
+                                               % (self.id, user_to_follow.id))
+        if len(list(relation)) > 0:
+            relation = relation[0]
+            if relation.followed == 1:
+                return
+            relation.followed = 1
+            relation.save()
+        else:
+            UserFollowUser.objects.create(follower_id=self.id, following_id=user_to_follow.id)
+
+
+    def remove_following(self, user_to_cancel_follow):
+        relation = UserFollowUser.objects.raw('''select * from app_userfollowuser re
+                                               where re.follower_id=%d and re.following_id=%d'''
+                                               % (self.id, user_to_cancel_follow.id))
+        if len(list(relation)) > 0:
+            relation = relation[0]
+            if relation.followed == 0:
+                return
+            relation.followed = 0
+            relation.save()
+    """
+
 
 
 class ArticleQuerySet(models.query.QuerySet):
@@ -89,7 +131,10 @@ class Article(models.Model):
 # TODO: User Follow User #
 ##########################
 
-
+class UserFollowUser(models.Model):
+    follower = models.ForeignKey('User', related_name='follower')
+    following = models.ForeignKey('User', related_name='following')
+    followed = models.BooleanField(default=1)
 
 ###########################
 # TODO: User Like Article #
