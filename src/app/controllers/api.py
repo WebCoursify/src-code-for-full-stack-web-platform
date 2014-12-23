@@ -251,6 +251,9 @@ def follow(request):
     if 'target_user_id' not in data:
         return HttpResponseBadRequest('target_user_id must be provided')
 
+    if int(data['target_user_id']) == request.session.get('user')['id']:
+        return HttpResponseBadRequest('Cannot do this to oneself')
+
     target_user = User.objects.find_by_id(int(data['target_user_id']))
     if target_user is None:
         return HttpResponseNotFound('target user not found')
@@ -268,6 +271,9 @@ def unfollow(request):
     data = request.REQUEST
     if 'target_user_id' not in data:
         return HttpResponseBadRequest('target_user_id must be provided')
+
+    if int(data['target_user_id']) == request.session.get('user')['id']:
+        return HttpResponseBadRequest('Cannot do this to oneself')
 
     target_user = User.objects.find_by_id(int(data['target_user_id']))
     if target_user is None:
