@@ -1,19 +1,75 @@
 <nav>
-  <ul class="pagination">
-    <li>
-      <a href="#" aria-label="Previous">
-        <span aria-hidden="true">&laquo;</span>
-      </a>
-    </li>
-    <li><a href="#">1</a></li>
-    <li><a href="#">2</a></li>
-    <li><a href="#">3</a></li>
-    <li><a href="#">4</a></li>
-    <li><a href="#">5</a></li>
-    <li>
-      <a href="#" aria-label="Next">
-        <span aria-hidden="true">&raquo;</span>
-      </a>
-    </li>
-  </ul>
+
+  <div class="float-right">
+    <ul class="pagination pagination-sm">
+      {% if curr_page > 0 %}
+      <li>
+        <a href="javascript:;" class="pager-button" data-page="0" aria-label="First">
+          <span aria-hidden="true">First</span>
+        </a>
+      </li>
+
+      <li>
+        <a href="javascript:;" class="pager-button" data-page="{{prev_page}}" aria-label="Prev">
+          <span aria-hidden="true">Prev</span>
+        </a>
+      </li>
+      {% endif %}
+
+      {% for page in page_range %}
+        <li class="{% if page == curr_page %} active {% endif %}"><a href="javascript:;" class="pager-button " data-page="{{page}}">{{ page | add:'1'}}</a></li>
+      {% endfor %}
+
+      {% if curr_page < last_page %}
+        <li>
+          <a href="javascript:;" class="pager-button" data-page="{{ next_page }}" aria-label="Next">
+            <span aria-hidden="true">Next</span>
+          </a>
+        </li>
+
+        <li>
+          <a href="javascript:;" class="pager-button" data-page="{{ last_page }}" aria-label="Next">
+            <span aria-hidden="true">Last</span>
+          </a>
+        </li>
+      {% endif %}
+    </ul>
+  </div>
+
+  <div class="float-right" style="margin-top: 25px;margin-right: 15px;">
+    Item per page:
+    <select id="select-count-per-page">
+      <option {% if count == 10 %} selected="selected" {% endif %}>10</option>
+      <option {% if count == 20 %} selected="selected" {% endif %}>20</option>
+      <option {% if count == 50 %} selected="selected" {% endif %}>50</option>
+    </select>
+  </div>
+  <div style="clear:both"></div>
 </nav>
+
+<script type="text/javascript">
+  /** Parse url parameter, change to selected page */
+  
+  $('.pager-button').click(function(e){
+    var $this = $(this),
+        page = $this.data('page');
+
+    var params = $.url().param();
+    params.page = page;
+    params.count = $('#select-count-per-page').val();
+
+    var newUrl = $.url().attr('path') + '?';
+
+    for(key in params){
+      if(params[key] || params[key] == '0'){
+        newUrl += key + '=' + params[key] + '&';
+      }
+    }
+
+    window.location.href = newUrl;
+
+  });
+  
+
+
+</script>
