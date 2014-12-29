@@ -16,10 +16,11 @@
 
             <form class="form-horizontal" role="form" id="article-form" 
                     {% if article %}
-                        action="/api/article/create"
+                        action="/api/article/{{article.id}}/update"
                     {% else %} 
-                        action="/api/article/{{article.id/update"
+                        action="/api/article/create"
                     {% endif %}
+                    method="POST"
                     >
                 <div class="form-group">
                     <label for="title" class="col-sm-2 control-label">Title</label>
