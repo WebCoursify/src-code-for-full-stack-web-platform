@@ -90,7 +90,15 @@ class ArticleManager(models.Manager):
         return ArticleQuerySet(self.model)
 
     def search(self, query=None, sort=None, page=None, count=None, published=None):
-        if query is not None:
+        """
+        :param query:
+        :param sort:
+        :param page:
+        :param count:
+        :param published:
+        :return: tuple, query result and total count
+        """
+        if query:
             result_set = self.filter(title__icontains=query, deleted=0)
         else:
             result_set = self.filter(deleted=0)
@@ -104,13 +112,15 @@ class ArticleManager(models.Manager):
         if sort is not None:
             result_set = result_set.order_by(sort)
 
+        total_count = result_set.count()
+
         if count is not None:
             if page is None:
                 result_set = result_set[: count]
             else:
                 result_set = result_set[page * count: (page + 1) * count]
 
-        return result_set
+        return total_count, result_set
 
 
 class Article(models.Model):
