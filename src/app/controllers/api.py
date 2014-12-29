@@ -61,7 +61,7 @@ def get_articles(request):
                   be excluded
         sort    : a string. Valid values are: '[+/-]time' - sort by time ascending or descending; '[+/-title]' sort by
                   title alphabetically ascending or descending. If not provided, default is '-time'
-        page    : a string or number. 'first', 'last' or 0, 1, 2, ... (start from zero), default is 0
+        page    : a number. 0, 1, 2, ... (start from zero), default is 0
         count   : how many articles to return at most for this page. If not provided, default is 10
     :return: json array, each element is {"title": ..., "content": ..., "time": string in format of "%Y-%m-%d %H:%M:%D",
              "author": {"username": ..., "id": ...} }
