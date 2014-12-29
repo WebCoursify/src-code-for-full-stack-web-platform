@@ -11,6 +11,7 @@ urlpatterns = patterns('',
     url(r'^feeds$', webpages.feeds),
 
     url(r'^create_article$', webpages.create_article),
+    url(r'^edit_article$', webpages.edit_article),
 
     url(r'^people$', webpages.people),
     url(r'^homepage$', webpages.user_homepage),

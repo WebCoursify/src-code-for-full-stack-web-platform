@@ -141,14 +141,25 @@ def create_article(request):
     """
     return render_to_response('./create_article.html', locals())
 
-
+@login_required
 def edit_article(request):
     """
     Render the page for editing an article
     Should require the log on user be the author of this article
     """
-    # TODO: Implement this
-    return None
+    article_id = request.GET.get('id', None)
+    if not article_id:
+        return response404()
+    article = Article.objects.filter(id=int(article_id), deleted=0)
+    if not article.exists():
+        return response404()
+
+    article = article[0]
+    user = request.session.get('user')
+    if article.author_id != user['id']:
+        return redirect('/')
+
+    return render_to_response('./create_article.html', locals())
 
 
 def user_liked_articles(request):
