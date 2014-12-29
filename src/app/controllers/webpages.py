@@ -34,11 +34,28 @@ def all_articles(request):
     page = request.GET.get('page', '0')
     count = request.GET.get('count', '10')
 
-    articles = Article.objects.search(query=query, sort='-time_create', page=int(page), count=int(count), published=True)
+    if page:
+        page = int(page)
+    else:
+        page = None
+
+    if count:
+        count = int(count)
+    else:
+        count = None
+
+    total_count, articles = Article.objects.search(query=query, sort='-time_create', page=int(page), count=int(count), published=True)
 
     nav = 'all'  # For correct tab display on the front end, please leave this untouched
-    return render_to_response('./index.html', locals())
 
+    curr_page = int(page)
+    prev_page = curr_page - 1
+    next_page = curr_page + 1
+    last_page = (total_count + count - 1) / count - 1
+    if last_page < 0:
+        last_page = 0
+    page_range = [i for i in range(curr_page - 3, curr_page + 3) if i >= 0 and i <= last_page]
+    return render_to_response('./index.html', locals())
 
 def feeds(request):
     """
