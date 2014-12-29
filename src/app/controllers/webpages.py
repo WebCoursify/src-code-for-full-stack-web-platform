@@ -28,7 +28,12 @@ def all_articles(request):
     This naive implementation only return the 10 most recent public articles
     A correct implementation should support query, page, count parameters as in api.get_articles
     """
-    articles = Article.objects.filter(deleted=0, state=Article.STATE_PUBLISHED).order_by('-time_create')[: 10]
+
+    query = request.GET.get('query', None)
+    page = request.GET.get('page', '0')
+    count = request.GET.get('count', '10')
+
+    articles = Article.objects.search(query=query, sort='-time_create', page=int(page), count=int(count), published=True)
 
     nav = 'all'  # For correct tab display on the front end, please leave this untouched
     return render_to_response('./index.html', locals())
