@@ -1,4 +1,6 @@
 
+{% include 'includes/pager.html' %}
+
 {% for article in articles %}
     <div class="article-list-item-main" data-article-title="{{article.title}}">
         <h2>
@@ -27,7 +29,7 @@
 {% endfor %}
 
 <!-- Pager -->
-{% include 'includes/pager.html' %}
+
 <!-- <ul class="pager">
     <li class="previous">
         <a href="#">&larr; Older</a>
