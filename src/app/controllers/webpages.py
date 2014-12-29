@@ -30,6 +30,7 @@ def all_articles(request):
     A correct implementation should support query, page, count parameters as in api.get_articles
     """
     articles = Article.objects.filter(deleted=0, state=Article.STATE_PUBLISHED).order_by('-time_create')[: 10]
+
     nav = 'all'  # For correct tab display on the front end, please leave this untouched
     return render_to_response('./index.html', locals())
 

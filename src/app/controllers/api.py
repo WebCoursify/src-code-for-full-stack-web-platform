@@ -149,7 +149,7 @@ def get_articles(request):
     # print query, sort, page, count
 
     # Start searching
-    result = Article.objects.search(query=query, sort=sort, page=int(page), count=int(count), published=True)
+    total_count, result = Article.objects.search(query=query, sort=sort, page=int(page), count=int(count), published=True)
     response_data = [{'id': article.id, 'title': article.title, 'content': article.content,
                       'time': article.time_create.strftime('%Y-%m-%d %H:%M:%S'),
                       'author': {'id': article.author.id, 'username': article.author.username}} for article in result]
