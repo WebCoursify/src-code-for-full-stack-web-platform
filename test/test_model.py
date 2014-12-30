@@ -21,6 +21,10 @@ class ModelBaseTestCase(BaseTestCase):
     def tearDown(self):
         self.db.close()
 
+    def find_default_user_id(self):
+        user = self.db.get(USER_TABLE_NAME).find_one({'email': DEFAULT_USER_NAME + '@gmail.com'})
+        return user.id
+
 class SearchTestCase(ModelBaseTestCase):
 
     def test_search(self):

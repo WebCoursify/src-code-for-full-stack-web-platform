@@ -32,7 +32,14 @@ load:
 3_model_follow_throughput:
 	python test_model.py FollowThroughputTestCase
 
+4_view:
+	python test_view.py
 
+4_view_articles:
+	python test_view.py IndexViewTestCase
+
+4_view_edit_article:
+	python test_view.py EditArticleTestCase
 
 install:
 	pip install mysql-python
