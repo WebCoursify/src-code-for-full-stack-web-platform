@@ -41,6 +41,9 @@ load:
 4_view_edit_article:
 	python test_view.py EditArticleTestCase
 
+4_view_article_page:
+	python test_view.py ArticlePageTestCase
+
 install:
 	pip install mysql-python
 	pip install monsql
