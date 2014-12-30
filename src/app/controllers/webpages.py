@@ -158,7 +158,7 @@ def edit_article(request):
     article = article[0]
     user = request.session.get('user')
     if article.author_id != user['id']:
-        return redirect('/')
+        return response404()
 
     return render_to_response('./create_article.html', locals())
 
