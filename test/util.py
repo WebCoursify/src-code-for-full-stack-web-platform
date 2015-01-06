@@ -36,7 +36,7 @@ class BaseTestCase(unittest.TestCase):
     def login(self, email=None, password=None):
         if email is None or password is None:
             email = DEFAULT_USER_NAME + '@gmail.com'
-            password = md5(DEFAULT_USER_NAME)
+            password = DEFAULT_USER_NAME
 
         session = requests.Session()
 

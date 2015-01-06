@@ -5,7 +5,12 @@ from app.models import *
 import json
 from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
+import hashlib
 
+def md5(stream):
+    m = hashlib.md5()
+    m.update(stream)
+    return m.hexdigest()
 
 def login_required_otherwise_401(controller):
     def inner(request):
@@ -19,7 +24,10 @@ def login_required_otherwise_401(controller):
 def login(request):
     email = request.REQUEST.get('email', None)
     password = request.REQUEST.get('password', None)
+    if email is None or password is None:
+        return HttpResponseBadRequest('email and password required')
 
+    password = md5(password)
     user = User.objects.filter(email=email, password=password, deleted=0)
     if not user.exists():
         return HttpResponse(json.dumps({'error': 'Incorrect email/password'}))

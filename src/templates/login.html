@@ -42,18 +42,9 @@
 {% endblock %}
 
 {% block extra_script %}
-<script type="text/javascript" src="/static/js/md5.min.js"></script>
 <script type="text/javascript" src="/static/js/jquery.form.min.js"></script>
 <script type="text/javascript">
     $('#login-form').ajaxForm({
-        beforeSubmit: function(arr, form, option){
-            for(var i = 0; i < arr.length; i++){
-                if(arr[i].name == 'password'){
-                    arr[i].value = md5(arr[i].value);
-                    break;
-                }
-            }
-        },
         success: function(res){
             if(res.error)
                 alert(res.error);
