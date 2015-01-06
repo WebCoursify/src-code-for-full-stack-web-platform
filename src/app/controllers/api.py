@@ -70,7 +70,7 @@ def article_operation(author_required=False):
     return decorator
 
 
-
+@csrf_exempt
 def login(request):
     email = request.REQUEST.get('email', None)
     password = request.REQUEST.get('password', None)
@@ -87,7 +87,9 @@ def login(request):
 
     return HttpResponse(json.dumps({'success': True}))
 
-
+@csrf_exempt
+@allow_methods(['POST'])
+@transaction.atomic
 def register(request):
     """
     Register a user. Takes input:
@@ -108,8 +110,22 @@ def register(request):
     3. Create a user through the User class. The user.role should be User.ROLE_AUTHOR
     4. Return data as indicated above
     """
-    # TODO: Implement this
-    return None
+    email = request.REQUEST.get('email', None)
+    username = request.REQUEST.get('username', None)
+    password = request.REQUEST.get('password', None)
+
+    if not email or not username or not password:
+        return HttpResponseBadRequest()
+
+    existed_user = User.objects.filter(email=email)
+    if existed_user.exists():
+        return HttpResponse(json.dumps({'error': 'duplicate email'}))
+
+    password = md5(password)
+    new_user = User(email=email, username=username, password=password, role=User.ROLE_AUTHOR)
+    new_user.save()
+
+    return HttpResponse(json.dumps({'success': True}))
 
 
 def get_articles(request):

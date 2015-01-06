@@ -21,25 +21,25 @@
             <h2>
                 Register
             </h2>
-            <form role="form" id="register-form">
+            <form role="form" id="register-form" action="/api/register" method="POST">
                 <div class="form-group">
                     <label for="email">Email address</label>
-                    <input type="email" class="form-control" id="email" placeholder="Enter email" name="email">
+                    <input type="email" class="form-control" id="email" placeholder="Enter email" name="email" required>
                 </div>
 
                 <div class="form-group">
                     <label for="username">User name</label>
-                    <input class="form-control" id="username" placeholder="Enter username" name="username">
+                    <input class="form-control" id="username" placeholder="Enter username" name="username" required>
                 </div>
 
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" class="form-control" id="password" placeholder="Password" name="password">
+                    <input type="password" class="form-control" id="password" placeholder="Password" name="password" required>
                 </div>
 
                 <div class="form-group">
                     <label for="repeat_password">Repeat Password</label>
-                    <input type="password" class="form-control" id="repeat_password" placeholder="Password" name="repeat_password">
+                    <input type="password" class="form-control" id="repeat_password" placeholder="Password" name="repeat_password" required>
                 </div>
 
                 <button type="submit" class="btn btn-default">Submit</button>
@@ -54,15 +54,43 @@
 {% block extra_script %}
 <script type="text/javascript" src="/static/js/jquery.form.min.js"></script>
 <script type="text/javascript">
-    $('#login-form').ajaxForm({
+    
+    function isEmail(string){
+        var atpos = string.indexOf("@");
+        var dotpos = string.lastIndexOf(".");
+        if (atpos< 1 || dotpos<atpos+2 || dotpos+2>=string.length) {
+            return false;
+        }
+        return true;
+    }
+
+    $('#register-form').ajaxForm({
         beforeSubmit: function(arr, form, option){
-            /** TODO: Fill in your code **/
+            var password, repeat_password, email;
+            arr.forEach(function(item){
+                if(item.name == 'password')
+                    password = item.value;
+                if(item.name == 'repeat_password')
+                    repeat_password = item.value;
+                if(item.name == 'email')
+                    email = item.value;
+            });
+            if(!isEmail(email)){
+                alert('email invalid');
+                return false;
+            }
+            if(password !== repeat_password){
+                alert('Passwords not matched');
+                return false;
+            }
         },
         success: function(res){
-            /** TODO: Fill in your code **/
+            if(res.error) 
+                alert(res.error);
+            window.location.href = '/login';
         },
         error: function(e){
-            /** TODO **/
+            alert('server error');
         },
         dataType: 'json'
     })
