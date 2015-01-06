@@ -1,6 +1,6 @@
 from config import MYSQL_HOST, MYSQL_PORT, MYSQL_PASSWORD, MYSQL_USERNAME, MYSQL_DB_NAME, ARTICLE_TABLE_NAME, USER_TABLE_NAME, DEFAULT_USER_NAME
 import sys, os, json
-from monsql import MonSQL
+from monsql import MonSQL, DB_TYPES
 from datetime import datetime
 import hashlib
 from config import DATA_FILE
@@ -14,7 +14,7 @@ def main():
 
 	data = load_data()
 
-	db = MonSQL(MYSQL_HOST, MYSQL_PORT, username=MYSQL_USERNAME, password=MYSQL_PASSWORD, dbname=MYSQL_DB_NAME)
+	db = MonSQL(MYSQL_HOST, MYSQL_PORT, username=MYSQL_USERNAME, password=MYSQL_PASSWORD, dbname=MYSQL_DB_NAME, dbtype=DB_TYPES.MYSQL)
 	db.set_foreign_key_check(False)
 	user_table, article_table = db.get(USER_TABLE_NAME), db.get(ARTICLE_TABLE_NAME)
 

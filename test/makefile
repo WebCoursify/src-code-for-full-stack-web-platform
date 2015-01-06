@@ -32,6 +32,7 @@ load:
 3_model_follow_throughput:
 	python test_model.py FollowThroughputTestCase
 
+# Chapter 4: View
 4_view:
 	python test_view.py
 
@@ -43,6 +44,10 @@ load:
 
 4_view_article_page:
 	python test_view.py ArticlePageTestCase
+
+# Chapter 5 User and Many others
+5_user:
+	python test_user.py
 
 install:
 	pip install mysql-python

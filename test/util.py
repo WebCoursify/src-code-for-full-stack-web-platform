@@ -3,6 +3,10 @@ import hashlib
 import unittest
 import requests
 from config import WEBSITE_ADDRESS, DEFAULT_USER_NAME
+import uuid
+
+def random_string():
+    return str(uuid.uuid1())
 
 def md5(stream):
     m = hashlib.md5()

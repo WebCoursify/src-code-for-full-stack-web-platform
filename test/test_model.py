@@ -1,12 +1,11 @@
 from config import MYSQL_HOST, MYSQL_PASSWORD, MYSQL_PORT, MYSQL_USERNAME, MYSQL_DB_NAME, WEBSITE_ADDRESS, DEFAULT_USER_NAME, \
                    ARTICLE_TABLE_NAME, USER_TABLE_NAME
 import unittest
-from monsql import MonSQL, ASCENDING, DESCENDING
+from monsql import MonSQL, ASCENDING, DESCENDING, DB_TYPES
 from util import proxy, BaseTestCase
 import random
 import uuid
 import json
-import MySQLdb
 import time
 from datetime import datetime
 
@@ -15,7 +14,7 @@ def random_string():
 
 class ModelBaseTestCase(BaseTestCase):
     def setUp(self):
-        self.db = MonSQL(MYSQL_HOST, MYSQL_PORT, MYSQL_USERNAME, MYSQL_PASSWORD, MYSQL_DB_NAME)
+        self.db = MonSQL(MYSQL_HOST, MYSQL_PORT, MYSQL_USERNAME, MYSQL_PASSWORD, MYSQL_DB_NAME, dbtype=DB_TYPES.MYSQL)
         self.db.commit()
 
     def tearDown(self):
@@ -197,7 +196,7 @@ class FollowRelationTestCase(ModelBaseTestCase):
         user_group_b = users[10: 20]
 
         for user_a in user_group_a:
-            session = self.login(user_a.email, user_a.password)
+            session = self.login(user_a.email, user_a.username)
             
             for user_b in user_group_b:
 
@@ -208,7 +207,7 @@ class FollowRelationTestCase(ModelBaseTestCase):
                              sorted([u.id for u in user_group_b]))
 
         for user_b in user_group_b:
-            session = self.login(user_b.email, user_b.password)
+            session = self.login(user_b.email, user_b.username)
             self.assertEqual(sorted([u['id'] for u in self.get_follower_list(session)]), 
                              sorted([u.id for u in user_group_a]))
 
@@ -223,7 +222,7 @@ class FollowRelationTestCase(ModelBaseTestCase):
 
         # Test unfollow
         for user_a in user_group_a:
-            session = self.login(user_a.email, user_a.password)
+            session = self.login(user_a.email, user_a.username)
             
             for user_b in user_group_b:
                 self.set_unfollow(session, user_b.id)
@@ -239,7 +238,7 @@ class FollowRelationTestCase(ModelBaseTestCase):
 
         user = users[0]
 
-        session = self.login(user.email, user.password)
+        session = self.login(user.email, user.username)
         response = session.post(WEBSITE_ADDRESS + '/api/user/follow', data={'target_user_id': user.id})
         self.assertEqual(response.status_code, 400)
 
@@ -282,7 +281,7 @@ class FollowThroughputTestCase(ModelBaseTestCase):
         print len(user_group_a), len(user_group_b)
 
         for user_a in user_group_a:
-            session = self.login(user_a.email, user_a.password)
+            session = self.login(user_a.email, user_a.username)
             for user_b in user_group_b:
                 self.set_follow(session, user_b.id)
 
@@ -291,7 +290,7 @@ class FollowThroughputTestCase(ModelBaseTestCase):
         for i in range(test_count):
             idx_a = random.randint(0, len(user_group_a) - 1)
             user_a = user_group_a[idx_a]
-            session = self.login(user_a.email, user_a.password)
+            session = self.login(user_a.email, user_a.username)
 
             follower_list = self.get_following_list(session)
             random.shuffle(follower_list)
@@ -309,7 +308,7 @@ class FollowThroughputTestCase(ModelBaseTestCase):
 
         # Clear all
         for user_a in user_group_a:
-            session = self.login(user_a.email, user_a.password)
+            session = self.login(user_a.email, user_a.username)
             for user_b in user_group_b:
                 self.set_unfollow(session, user_b.id)
 

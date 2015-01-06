@@ -44,6 +44,7 @@ class BasicTestCase(BaseTestCase):
 
 
 if __name__ == '__main__':
+	print "This test case should be run against a clean database -- a database that just loads the test data"
 	unittest.main()
 
 		
