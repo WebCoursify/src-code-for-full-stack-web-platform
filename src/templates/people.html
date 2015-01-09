@@ -25,9 +25,8 @@
             </h1>
 
             <!-- First Blog Post -->
-            <p>
-                {{ users | length }} users found.
-            </p>
+
+            {% include 'includes/pager.html' %}
 
             {% for user_chunk in user_chunks %}
                 <div class="row">
@@ -50,16 +49,6 @@
 
             {% endfor %}
 
-            <!-- Pager -->
-            <ul class="pager">
-                <li class="previous">
-                    <a href="#">&larr; Prev</a>
-                </li>
-                <li class="next">
-                    <a href="#">Next &rarr;</a>
-                </li>
-            </ul>
-
         </div>
 
         <!-- Blog Sidebar Widgets Column -->
@@ -70,7 +59,7 @@
                 <form action="/people" method="GET">
                     <div class="input-group">
                     
-                        <input type="text" class="form-control" name="query">
+                        <input type="text" class="form-control" name="query" value="{{ query | default_if_none:''}}">
                         <span class="input-group-btn">
                             <button class="btn btn-default" type="button">
                                 <span class="glyphicon glyphicon-search"></span>

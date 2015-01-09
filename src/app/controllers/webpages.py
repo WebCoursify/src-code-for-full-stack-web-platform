@@ -2,6 +2,7 @@ from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotAll
 from django.shortcuts import render_to_response, redirect
 from app.models import *
 import math
+from django.db.models import Q
 
 
 def login_required(controller):
@@ -17,6 +18,16 @@ def response404():
     response = render_to_response('./404.html', locals())
     response.status_code = 404
     return response
+
+def get_pager_data(page, count, total_page_count):
+    curr_page = int(page)
+    prev_page = curr_page - 1
+    next_page = curr_page + 1
+    last_page = (total_page_count + count - 1) / count - 1
+    if last_page < 0:
+        last_page = 0
+    page_range = [i for i in range(curr_page - 3, curr_page + 3) if i >= 0 and i <= last_page]
+    return curr_page, prev_page, next_page, last_page, page_range
 
 ###################################
 # Main pages, related to articles #
@@ -47,13 +58,7 @@ def all_articles(request):
 
     nav = 'all'  # For correct tab display on the front end, please leave this untouched
 
-    curr_page = int(page)
-    prev_page = curr_page - 1
-    next_page = curr_page + 1
-    last_page = (total_count + count - 1) / count - 1
-    if last_page < 0:
-        last_page = 0
-    page_range = [i for i in range(curr_page - 3, curr_page + 3) if i >= 0 and i <= last_page]
+    curr_page, prev_page, next_page, last_page, page_range = get_pager_data(page, count, total_count)
     return render_to_response('./index.html', locals())
 
 def feeds(request):
@@ -73,7 +78,24 @@ def people(request):
     page    : as usual
     count   : as usual
     """
-    users = User.objects.filter(deleted=0)[: 10]
+    query = request.REQUEST.get('query', None)
+    page = request.REQUEST.get('page', 0)
+    count = request.REQUEST.get('count', 10)
+
+    if page == '':
+        page = 0
+    if count == '':
+        count = 10
+        
+    page = int(page)
+    count = int(count)
+
+    users = User.objects.filter(deleted=0)
+    if query:
+        users = users.filter(Q(username__contains=query) | Q(description__contains=query))
+
+    total_count = len(users)
+    users = users[count * page: (page + 1) * count]
 
     # The following code put retrieved users in two-item group, so it's easier to render two users
     # each row in the front end
@@ -81,6 +103,7 @@ def people(request):
     user_chunks = [users[i * chunk_size: (i + 1) * chunk_size] for i in
                    range(int(math.ceil(len(users) / float(chunk_size))))]
 
+    curr_page, prev_page, next_page, last_page, page_range = get_pager_data(page, count, total_count)
     return render_to_response('./people.html', locals())
 
 
