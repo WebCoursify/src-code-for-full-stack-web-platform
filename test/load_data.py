@@ -28,7 +28,8 @@ def main():
 			item['author'] = item['author'].replace(' ', '.')
 
 	# Insert users
-	users = [{'username': username, 'password': md5(username), 'email': '%s@gmail.com' %username, 'role': 2, 'deleted': 0} \
+	users = [{'username': username, 'password': md5(username), 'description': 'My name is ' + username,
+			  'email': '%s@gmail.com' %username, 'role': 2, 'deleted': 0} \
 	          for username in set([item['author'] for item in data])]
 	# Inser a bunch of zombie users
 	#users += [{'username': username, 'password': md5(username), 'email': '%s@gmail.com' %username, 'role': 2, 'deleted': 0} \
