@@ -32,14 +32,19 @@
                 <div class="row">
                     {% for user in user_chunk %}
                         <div class="col-md-6 user-info">
-                            <div class="float-left">
-                                <img src="/static/img/ghost_person_40x40_v1.png">
+                            <div class="col-md-3">
+
+                                <img src="{{ user.avatar | default_if_none:'/static/img/ghost_person_40x40_v1.png'}} " style="width:40px;height: 40px;margin: 5px auto;margin-left: auto;margin-right: auto">
+                                {% include 'includes/btn_follow.html' %}
                             </div>
-                            <div class="float-left">
+                            <div class="col-md-9">
                                 <div>
                                     <a href="/homepage?id={{user.id}}">
-                                        <b>{{user.username}}</b>
+                                        <b>{{user.username}}</b> 
                                     </a>
+                                    <p>
+                                        {{ user.description | default_if_none:''}}
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -76,4 +81,10 @@
     </div>
     <!-- /.row -->
 
+{% endblock %}
+
+{% block extra_script %}
+<script type="text/javascript">
+    App.initFollowButtons();
+</script>
 {% endblock %}

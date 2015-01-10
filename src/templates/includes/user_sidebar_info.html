@@ -1,0 +1,31 @@
+<div class="well">
+    <div>
+    <img src="{{ user.avatar | default_if_none:'/static/img/ghost_person_180x180_v1.png' }}" style="margin-left:20%;width:60%;margin-bottom:10px;"/> 
+
+    <div style="text-align: center">
+        <h4>{{user.username}}</h4>
+        <div class="row">
+            <div class="col-md-10 col-md-offset-1">
+                <div class="col-md-4">
+                    <small>Followers</small>
+                    <p>{{ user.follower_count }}</p>
+                </div>
+                <div class="col-md-4">
+                    <small>Following</small>
+                    <p>{{ user.following_count }}</p>
+                </div>
+                <div class="col-md-4">
+                    <small>Articles</small>
+                    <p>{{ user.article_number}}</p>
+                </div>
+            </div>
+        </div>
+        <span>{% include 'includes/btn_follow.html' %}</span>
+
+        {% if user.id == request.session.user.id %}
+            <a href="/profile/edit">Edit Information</a>
+        {% endif %}
+
+    </div>
+    </div>
+</div>

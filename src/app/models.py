@@ -23,6 +23,18 @@ class User(models.Model):
     follows  = models.ManyToManyField('User')
     deleted  = models.BooleanField(default=0)
 
+    @property
+    def article_number(self):
+        return len(Article.objects.filter(author_id=self.id, deleted=0))
+
+    @property
+    def following_count(self):
+        return len(self.follows.all())
+
+    @property
+    def follower_count(self):
+        return len(self.user_set.all())
+
     def get_followers(self):
         return self.user_set.all()
 
@@ -34,6 +46,12 @@ class User(models.Model):
 
     def remove_following(self, user_to_cancel_follow):
         self.follows.remove(user_to_cancel_follow)
+
+    def is_following(self, user):
+        if self.follows.filter(id=user.id).exists():
+            return True
+        else:
+            return False
 
     """
 

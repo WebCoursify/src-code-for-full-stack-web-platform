@@ -1,0 +1,15 @@
+{% include 'includes/user_sidebar_info.html' %}
+
+{% if user.id == request.session.user.id %}
+<div class="list-group">
+  <a href="/profile/edit" class="list-group-item {% if nav == 'edit'%} active {% endif %}">
+    Edit Profile
+  </a>
+  <a href="/profile/change_password" class="list-group-item {% if nav == 'password'%} active {% endif %}">
+    Update password
+  </a>
+  <a href="/profile/avatar" class="list-group-item {% if nav == 'avatar'%} active {% endif %}">
+    Upload avatar
+  </a>
+</div>
+{% endif %}

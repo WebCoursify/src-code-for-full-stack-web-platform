@@ -96,6 +96,11 @@ def people(request):
 
     total_count = len(users)
     users = users[count * page: (page + 1) * count]
+    if 'user' in request.session:
+        logon_user = User.objects.get(id=request.session.get('user')['id'])
+        for user in users:
+            if logon_user.is_following(user):
+                user.followed = True
 
     # The following code put retrieved users in two-item group, so it's easier to render two users
     # each row in the front end
@@ -121,6 +126,9 @@ def user_homepage(request):
         return response404()
 
     user = user[0]
+    if 'user' in request.session:
+        user.followed = User.objects.get(id=request.session.get('user')['id']).is_following(user)
+
     articles = Article.objects.filter(author_id=user.id)
     if 'user' not in request.session or request.session.get('user')['id'] != user.id:
         articles = articles.filter(state=Article.STATE_PUBLISHED)
@@ -153,6 +161,8 @@ def article_detail(request):
         return response404()
 
     article = article[0]
+    if 'user' in request.session:
+        article.author.followed = User.objects.get(id=request.session.get('user')['id']).is_following(article.author)
     # TODO: Add more implementations
 
     return render_to_response('./article.html', locals())

@@ -1,0 +1,14 @@
+{% if request.session.user and request.session.user.id != user.id %}
+<a class="btn btn-xs btn-follow"
+      data-text-followed="Followed"
+      data-text-to-follow="Follow"
+      data-text-unfollow="Unfollow"
+      data-user="{{user.id}}"
+      {% if user.followed %}
+      data-followed="1"
+      {% else %}
+      data-followed="0"
+      {% endif %}
+      style="display:inline-block;margin-left:auto;margin-right:auto;">
+</a>
+{% endif %}
