@@ -146,14 +146,27 @@ class Article(models.Model):
     STATE_PUBLISHED   = 2
 
     objects  = ArticleManager()
-    author   = models.ForeignKey('User')
+    author   = models.ForeignKey('User', related_name='author')
     title    = models.CharField(max_length=100)
     content  = models.TextField()
     time_create = models.DateTimeField()
     time_update = models.DateTimeField(auto_now=True)
     state    = models.SmallIntegerField()
     deleted  = models.BooleanField(default=0)
+    liked_user = models.ManyToManyField(User)
 
+    @property
+    def like_num(self):
+        return len(self.liked_user.all())
+
+    def add_like_user(self, user):
+        self.liked_user.add(user)
+
+    def remove_like_user(self, user):
+        self.liked_user.remove(user)
+
+    def does_user_like(self, user):
+        return self.liked_user.filter(id=user.id).exists()
 
 ##########################
 # TODO: User Follow User #

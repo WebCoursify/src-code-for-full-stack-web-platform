@@ -11,14 +11,18 @@ import uuid
 import os
 from web_dev_tutorial.settings import MEDIA_ROOT, BASE_DIR, EMAIL_HOST_USER
 
-##############
-# Decorators #
-##############
+###########
+# Helpers #
+###########
 
 def md5(stream):
     m = hashlib.md5()
     m.update(stream)
     return m.hexdigest()
+
+
+def get_logon_user(request):
+    return User.objects.get(id=request.session.get('user')['id'])
 
 ##############
 # Decorators #
@@ -33,7 +37,8 @@ def json_view(controller):
     return inner
 
 def login_required_otherwise_401(controller):
-    def inner(request):
+    def inner(*args, **kwargs):
+        request = args[0]
         if 'user' not in request.session:
             return HttpResponse('Unauthorized', status=401)
         else:
@@ -41,7 +46,7 @@ def login_required_otherwise_401(controller):
             user = User.objects.find_by_id(user_id)
             if user is None:
                 return HttpResponse('Invalid user', status=403)
-            return controller(request)
+            return controller(*args, **kwargs)
     return inner
 
 
@@ -428,7 +433,31 @@ def get_followings(request):
 
     return HttpResponse(json.dumps([{'id': u.id, 'username': u.username} for u in followings]))
 
+#############
+# User Like #
+#############
 
+@csrf_exempt
+@json_view
+@login_required_otherwise_401
+@allow_methods(['POST'])
+@article_operation(False)
+def article_set_like(request, article_id):
+    article = Article.objects.get(id=article_id)
+    user = get_logon_user(request)
+
+    data = request.REQUEST
+    to_like = data.get('like', None)
+    if to_like is None:
+        return HttpResponseBadRequest('parameter missing')
+
+    to_like = int(to_like)
+    if to_like == 1:
+        article.add_like_user(user)
+    else:
+        article.remove_like_user(user)
+
+    return {'success': True, 'like_num': article.like_num}
 
 
 

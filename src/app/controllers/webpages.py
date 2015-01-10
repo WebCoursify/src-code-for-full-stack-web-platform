@@ -162,7 +162,10 @@ def article_detail(request):
 
     article = article[0]
     if 'user' in request.session:
-        article.author.followed = User.objects.get(id=request.session.get('user')['id']).is_following(article.author)
+        logon_user = User.objects.get(id=request.session.get('user')['id'])
+        article.author.followed = logon_user.is_following(article.author)
+        article.liked = article.does_user_like(logon_user)
+
     # TODO: Add more implementations
 
     return render_to_response('./article.html', locals())

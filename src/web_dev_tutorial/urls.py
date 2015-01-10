@@ -42,6 +42,8 @@ urlpatterns = patterns('',
     url(r'^api/article/(?P<article_id>[0-9]+)/set_state$', api.update_article),
     url(r'^api/article/(?P<article_id>[0-9]+)/delete$', api.delete_article),
 
+    url(r'^api/article/(?P<article_id>[0-9]+)/set_like$', api.article_set_like),
+
     url(r'^api/user/follow$', api.follow),
     url(r'^api/user/unfollow$', api.unfollow),
     url(r'^api/user/followers', api.get_followers),
