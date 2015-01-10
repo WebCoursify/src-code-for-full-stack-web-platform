@@ -211,6 +211,10 @@ def logout(request):
         del request.session['user']
     return redirect('/')
 
+
+def reset_password(request):
+    return render_to_response('./reset_password.html', locals())
+
 @login_required
 def profile_edit(request):
     user = User.objects.get(id=request.session.get('user')['id'])

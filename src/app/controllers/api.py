@@ -1,5 +1,6 @@
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import render_to_response, redirect
+from django.core.mail import send_mail
 from datetime import datetime
 from app.models import *
 import json
@@ -8,7 +9,7 @@ from django.db import transaction
 import hashlib
 import uuid
 import os
-from web_dev_tutorial.settings import MEDIA_ROOT, BASE_DIR
+from web_dev_tutorial.settings import MEDIA_ROOT, BASE_DIR, EMAIL_HOST_USER
 
 ##############
 # Decorators #
@@ -190,6 +191,33 @@ def update_profile(request):
         user.avatar = savepath.replace(BASE_DIR, '')
 
     user.save()
+    write_user_info_to_session(user, request)
+    return {'success': True}
+
+
+@csrf_exempt
+@transaction.atomic
+@json_view
+@allow_methods(['POST'])
+def reset_password(request):
+    data = request.REQUEST
+    if 'email' not in data:
+        return HttpResponseBadRequest('email not provided')
+
+    email = data['email']
+    user = User.objects.filter(email=email, deleted=0)
+    if not user.exists():
+        return {'error': 'email invalid'}
+
+    user = user[0]
+    newpassword = str(uuid.uuid1()).replace('-', '')
+    user.password = md5(newpassword)
+    user.save()
+
+    send_mail('Reset Password', user.username + ': Your password has been reset to: '
+              + newpassword + '. Please use this to log on the modify your password',
+              from_email=EMAIL_HOST_USER, recipient_list=[email])
+
     return {'success': True}
 
 ############

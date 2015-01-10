@@ -24,6 +24,7 @@ urlpatterns = patterns('',
     url(r'^login$', webpages.login),
     url(r'^logout$', webpages.logout),
     url(r'^register$', webpages.register),
+    url(r'^reset_password$', webpages.reset_password),
 
     url(r'^about$', webpages.about),
 
@@ -33,7 +34,7 @@ urlpatterns = patterns('',
     url(r'^api/profile/update$', api.update_profile),
     url(r'^api/password/update$', api.update_profile),
     url(r'^api/avatar/update$', api.update_profile),
-
+    url(r'^api/reset_password$', api.reset_password),
 
     url(r'^api/article/list$', api.get_articles),
     url(r'^api/article/create$', api.create_article),
