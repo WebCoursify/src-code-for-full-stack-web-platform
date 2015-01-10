@@ -19,6 +19,7 @@ class User(models.Model):
     password = models.CharField(max_length=50)
     description = models.CharField(max_length=512, null=True)
     role     = models.SmallIntegerField()
+    avatar   = models.CharField(max_length=512, null=True)
     follows  = models.ManyToManyField('User')
     deleted  = models.BooleanField(default=0)
 

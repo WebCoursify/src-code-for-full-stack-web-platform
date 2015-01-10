@@ -1,0 +1,51 @@
+{% extends 'user_profile_base.html' %}
+
+{% block form %}
+	<h1>Edit information</h1>
+	<hr/>
+	<form class="form-horizontal" role="form" id="profile-edit-form" action="/api/profile/update"
+		method="POST">
+
+	    <div class="form-group">
+	        <label for="title" class="col-sm-2 control-label">User name</label>
+	        <div class="col-sm-10">
+	            <input type="text" class="form-control" name="username"
+	            value="{{ user.username }}" required>
+	        </div>
+	    </div>
+
+	    <div class="form-group">
+	        <label class="col-sm-2 control-label">Description</label>
+	        <div class="col-sm-10">
+	            <textarea name="description" cols=100% rows=6 placeholder="Put in your description">{{user.description | default_if_none:''}}</textarea>
+	        </div>
+	    </div>
+
+	    <div class="form-group">
+	        <div class="col-sm-offset-2 col-sm-10">
+	            <button type="submit" class="btn btn-default">Save</button>
+	        </div>
+	    </div>
+	</form>
+
+{% endblock %}
+
+{% block user_profile_script %}
+<script type="text/javascript">
+$('#profile-edit-form').ajaxForm({
+	success: function(res){
+		if(res.error)
+			alert(res.error);
+		else{
+			alert('Update successful!');
+			window.location.reload();
+		}
+	},
+	error: function(e){
+		alert('Internal server error');
+		console.log(e);
+	},
+	dataType: 'json'
+});
+</script>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends '_base.html' %}
+
+
+{% block body %}
+    <div class="row">
+        <!-- Blog Entries Column -->
+        <div class="col-md-8">
+            
+            {% block form %}
+
+            {% endblock %}
+        </div>
+
+        <!-- Blog Sidebar Widgets Column -->
+        <div class="col-md-4">
+            <div class="well">
+                <div>
+                    <img src="{{ user.avatar | default_if_none:'/static/img/ghost_person_180x180_v1.png' }}" style="margin-left:20%;width:60%;margin-bottom:10px;"/>
+                    <div style="text-align: center">
+                        <h4>{{user.username}}</h4>
+                        <span><a class="btn btn-success">Follow</a></span>
+                        <h5>Followers: 20</h5>
+                        <h5>Article number: 120</h5>
+                    </div>
+                </div>
+                
+
+            </div>
+
+            <div class="list-group">
+              <a href="/profile/edit" class="list-group-item {% if nav == 'edit'%} active {% endif %}">
+                Edit Profile
+              </a>
+              <a href="/profile/change_password" class="list-group-item {% if nav == 'password'%} active {% endif %}">
+                Update password
+              </a>
+              <a href="/profile/avatar" class="list-group-item {% if nav == 'avatar'%} active {% endif %}">
+                Upload avatar
+              </a>
+            </div>
+
+        </div>
+
+    </div>
+    <!-- /.row -->
+
+{% endblock %}
+
+{% block extra_script %}
+<script type="text/javascript" src="/static/js/jquery.form.min.js"></script>
+
+{% block user_profile_script %}
+{% endblock %}
+
+{% endblock %}

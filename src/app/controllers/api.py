@@ -6,6 +6,9 @@ import json
 from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
 import hashlib
+import uuid
+import os
+from web_dev_tutorial.settings import MEDIA_ROOT, BASE_DIR
 
 ##############
 # Decorators #
@@ -19,6 +22,14 @@ def md5(stream):
 ##############
 # Decorators #
 ##############
+
+def json_view(controller):
+    def inner(*args, **kwargs):
+        res = controller(*args, **kwargs)
+        if isinstance(res, list) or isinstance(res, dict):
+            return HttpResponse(json.dumps(res))
+        return res
+    return inner
 
 def login_required_otherwise_401(controller):
     def inner(request):
@@ -69,6 +80,12 @@ def article_operation(author_required=False):
 
     return decorator
 
+######################
+# Account management #
+######################
+
+def write_user_info_to_session(user, request):
+    request.session['user'] = {'id': user.id, 'username': user.username}
 
 @csrf_exempt
 def login(request):
@@ -83,9 +100,10 @@ def login(request):
         return HttpResponse(json.dumps({'error': 'Incorrect email/password'}))
 
     user = user[0]
-    request.session['user'] = {'id': user.id, 'username': user.username}
+    write_user_info_to_session(user, request)
 
     return HttpResponse(json.dumps({'success': True}))
+
 
 @csrf_exempt
 @allow_methods(['POST'])
@@ -127,6 +145,56 @@ def register(request):
 
     return HttpResponse(json.dumps({'success': True}))
 
+
+@csrf_exempt
+@json_view
+@allow_methods(['POST'])
+@login_required_otherwise_401
+def update_profile(request):
+    user = User.objects.get(id=request.session.get('user')['id'])
+    data = request.REQUEST
+
+    if 'username' in data:
+        if not data['username']:
+            return {'error': 'username can not be empty'}
+
+        user.username = data['username']
+
+    if 'description' in data:
+        user.description = data['description']
+
+    if data.get('original_password', '') and data.get('new_password', ''):
+        hashed_password = md5(data['original_password'])
+        if user.password != hashed_password:
+            return {'error': 'password incorrect'}
+        else:
+            user.password = md5(data['new_password'])
+
+    if 'avatar' in request.FILES:
+        fs = request.FILES['avatar']
+        filename = fs.name
+        print filename
+        filecontent = fs.read()
+
+        img_dir = os.path.join(MEDIA_ROOT, 'image')
+        if not os.path.exists(img_dir):
+            os.mkdir(img_dir)
+
+        uid = str(uuid.uuid1()).replace('-', '')
+        savepath = os.path.join(img_dir, uid + os.path.splitext(filename)[1])
+
+        out_fs = open(savepath, 'wb')
+        out_fs.write(filecontent)
+        out_fs.close()
+
+        user.avatar = savepath.replace(BASE_DIR, '')
+
+    user.save()
+    return {'success': True}
+
+############
+# Articles #
+############
 
 def get_articles(request):
     """

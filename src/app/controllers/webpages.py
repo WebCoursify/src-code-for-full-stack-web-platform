@@ -86,7 +86,7 @@ def people(request):
         page = 0
     if count == '':
         count = 10
-        
+
     page = int(page)
     count = int(count)
 
@@ -210,6 +210,27 @@ def logout(request):
     if 'user' in request.session:
         del request.session['user']
     return redirect('/')
+
+@login_required
+def profile_edit(request):
+    user = User.objects.get(id=request.session.get('user')['id'])
+    nav = 'edit'
+    return render_to_response('./user_profile_edit.html', locals())
+
+
+@login_required
+def profile_change_password(request):
+    user = User.objects.get(id=request.session.get('user')['id'])
+    nav = 'password'
+    return render_to_response('./user_profile_password.html', locals())
+
+
+@login_required
+def profile_avatar(request):
+    user = User.objects.get(id=request.session.get('user')['id'])
+    nav = 'avatar'
+    return render_to_response('./user_profile_avatar.html', locals())
+
 
 ################
 # Other stuffs #

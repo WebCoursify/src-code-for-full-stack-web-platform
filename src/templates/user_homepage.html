@@ -4,22 +4,27 @@
 {% block body %}
     <div class="row">
         <!-- Blog Entries Column -->
-        <div class="col-md-9">
+        <div class="col-md-8">
             
             {% include 'includes/article_list.html' %}
 
         </div>
 
         <!-- Blog Sidebar Widgets Column -->
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="well">
                 <div>
-                    <img src="/static/img/ghost_person_180x180_v1.png" style="margin-left:20%;width:60%;margin-bottom:10px;"/>
+                    <img src="{{ user.avatar | default_if_none:'/static/img/ghost_person_180x180_v1.png' }}" style="margin-left:20%;width:60%;margin-bottom:10px;"/>
                     <div style="text-align: center">
                         <h4>{{user.username}}</h4>
                         <span><a class="btn btn-success">Follow</a></span>
                         <h5>Followers: 20</h5>
                         <h5>Article number: 120</h5>
+
+                        {% if user.id == request.session.user.id %}
+                            <a href="/profile/edit">Edit Information</a>
+                        {% endif %}
+
                     </div>
                 </div>
                 
