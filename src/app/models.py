@@ -158,6 +158,9 @@ class Article(models.Model):
     @property
     def like_num(self):
         return len(self.liked_user.all())
+    @property
+    def comments(self):
+        return ArticleComment.objects.filter(article_id=self.id).order_by('-time')
 
     def add_like_user(self, user):
         self.liked_user.add(user)
@@ -168,27 +171,18 @@ class Article(models.Model):
     def does_user_like(self, user):
         return self.liked_user.filter(id=user.id).exists()
 
-##########################
-# TODO: User Follow User #
-##########################
 
 class UserFollowUser(models.Model):
     follower = models.ForeignKey('User', related_name='follower')
     following = models.ForeignKey('User', related_name='following')
     followed = models.BooleanField(default=1)
 
-###########################
-# TODO: User Like Article #
-###########################
 
-
-
-#######################
-# TODO: User Comments #
-#######################
-
-
-
+class ArticleComment(models.Model):
+    article = models.ForeignKey(Article)
+    user = models.ForeignKey(User)
+    content = models.TextField()
+    time = models.DateTimeField()
 
 
 

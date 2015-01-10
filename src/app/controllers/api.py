@@ -24,6 +24,14 @@ def md5(stream):
 def get_logon_user(request):
     return User.objects.get(id=request.session.get('user')['id'])
 
+
+class ComplexEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return obj.strftime('%Y-%m-%d %H:%M:%S')
+        else:
+            return json.JSONEncoder.default(self, obj)
+
 ##############
 # Decorators #
 ##############
@@ -32,7 +40,8 @@ def json_view(controller):
     def inner(*args, **kwargs):
         res = controller(*args, **kwargs)
         if isinstance(res, list) or isinstance(res, dict):
-            return HttpResponse(json.dumps(res))
+            return HttpResponse(json.dumps(res, cls=ComplexEncoder))
+
         return res
     return inner
 
@@ -91,7 +100,7 @@ def article_operation(author_required=False):
 ######################
 
 def write_user_info_to_session(user, request):
-    request.session['user'] = {'id': user.id, 'username': user.username}
+    request.session['user'] = {'id': user.id, 'username': user.username, 'avatar': user.avatar}
 
 @csrf_exempt
 def login(request):
@@ -459,8 +468,40 @@ def article_set_like(request, article_id):
 
     return {'success': True, 'like_num': article.like_num}
 
+@csrf_exempt
+@json_view
+@login_required_otherwise_401
+@allow_methods(['POST'])
+@article_operation(False)
+def add_comment(request, article_id):
+    article = Article.objects.get(id=article_id)
+    user = get_logon_user(request)
 
+    content = request.REQUEST.get('content', '')
+    if not content:
+        return {'error': 'content can not be empty'}
 
+    comment = ArticleComment.objects.create(user_id=user.id, article_id=article.id, content=content, time=datetime.now())
+    return {'user': {'id': user.id, 'username': user.username, 'avatar': user.avatar},
+            'id': comment.id,
+            'time': comment.time,
+            'content': comment.content}
 
+@csrf_exempt
+@json_view
+@login_required_otherwise_401
+@allow_methods(['POST'])
+def delete_comment(request, comment_id):
+    comment = ArticleComment.objects.filter(id=comment_id)
+    if not comment.exists():
+        return HttpResponseNotFound()
+    comment = comment[0]
+    
+    user = get_logon_user(request)
+    if not user.id == comment.user_id:
+        return HttpResponseForbidden()
+
+    comment.delete()
+    return {'success': True}
 
 

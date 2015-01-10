@@ -43,6 +43,9 @@ urlpatterns = patterns('',
     url(r'^api/article/(?P<article_id>[0-9]+)/delete$', api.delete_article),
 
     url(r'^api/article/(?P<article_id>[0-9]+)/set_like$', api.article_set_like),
+    url(r'^api/article/(?P<article_id>[0-9]+)/comment/add$', api.add_comment),
+
+    url(r'^api/article/comment/(?P<comment_id>[0-9]+)/delete$', api.delete_comment),
 
     url(r'^api/user/follow$', api.follow),
     url(r'^api/user/unfollow$', api.unfollow),
