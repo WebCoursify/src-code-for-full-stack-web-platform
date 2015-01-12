@@ -3,7 +3,7 @@ from django.shortcuts import render_to_response, redirect
 from app.models import *
 import math
 from django.db.models import Q
-
+from django.db import connection
 
 def login_required(controller):
     def inner(request):
@@ -61,11 +61,39 @@ def all_articles(request):
     curr_page, prev_page, next_page, last_page, page_range = get_pager_data(page, count, total_count)
     return render_to_response('./index.html', locals())
 
+@login_required
 def feeds(request):
     """
     This controller returns articles of the authors followed by the log on user
     Need to support the same parameters as all_articles
     """
+    query = request.GET.get('query', None)
+    page = request.GET.get('page', '0')
+    count = request.GET.get('count', '10')
+
+    if page:
+        page = int(page)
+    else:
+        page = None
+
+    if count:
+        count = int(count)
+    else:
+        count = None
+
+    log_on_user = User.objects.get(deleted=0, id=request.session.get('user')['id'])
+    sql_from = 'FROM app_article ar, app_user_follows f where f.from_user_id=%d \
+                and f.to_user_id=ar.author_id and ar.deleted=0' % log_on_user.id
+
+    cursor = connection.cursor()
+    cursor.execute('select count(*) ' + sql_from)
+    total_count = cursor.fetchone()[0]
+
+    sql = 'SELECT ar.id, ar.author_id, ar.title, ar.content, ar.time_create, ar.time_update, ar.state ' + sql_from + \
+          ' order by time_create desc limit %d,%d' % (page * count, count)
+    articles = Article.objects.raw(sql)
+
+    curr_page, prev_page, next_page, last_page, page_range = get_pager_data(page, count, total_count)
     nav = 'feeds'  # For correct tab display on the front end, please leave this untouched
     return render_to_response('./index.html', locals())
 
