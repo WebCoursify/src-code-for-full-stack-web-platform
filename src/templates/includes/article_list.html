@@ -7,7 +7,7 @@
             <a href="/article?id={{article.id}}">{{ article.title | safe }}</a>
         </h2>
         <p class="lead">
-            by <a href="/user?id={{article.author.id}}">{{ article.author.username }}</a>
+            by <a href="/homepage?id={{article.author.id}}">{{ article.author.username }}</a>
         </p>
         <p><span class="glyphicon glyphicon-time"></span> Posted on {{ article.time_create | date:"Y-m-d H:i:s"}}</p>
         

@@ -166,7 +166,8 @@ def article_detail(request):
         article.author.followed = logon_user.is_following(article.author)
         article.liked = article.does_user_like(logon_user)
 
-    # TODO: Add more implementations
+    recent_articles = Article.objects.filter(deleted=0, author_id=article.author_id) \
+                                     .exclude(id=article.id).order_by('-time_create')[: 5]
 
     return render_to_response('./article.html', locals())
 
@@ -175,6 +176,7 @@ def create_article(request):
     """
     Render the page for creating an article
     """
+    log_on_user = User.objects.get(id=request.session.get('user')['id'])
     return render_to_response('./create_article.html', locals())
 
 @login_required
@@ -194,6 +196,7 @@ def edit_article(request):
     user = request.session.get('user')
     if article.author_id != user['id']:
         return response404()
+    log_on_user = User.objects.get(id=request.session.get('user')['id'])
 
     return render_to_response('./create_article.html', locals())
 
