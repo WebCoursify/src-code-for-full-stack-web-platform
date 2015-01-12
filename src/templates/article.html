@@ -11,7 +11,6 @@
                 data-title="{{ article.title | safe }}"
                 data-status="{% if article.state == 1 %}draft{% elif article.state == 2 %}published{% else %}error{% endif %}"
                 data-id="{{ article.id }}"
-                data-content="{{ article.content | safe}}"
                 style="display:none;"></div>
             <!-- Untouchable Region Ends-->
 
@@ -25,69 +24,105 @@
                     <span>Posted on {{ article.time_create | date:"Y-m-d H:i:s"}}</span>
                 </span>
 
+                {% if request.session.user.id == article.author_id %}
                 <span class="float-right">
                     <a class="btn btn-info btn-sm btn-edit-article" href="/edit_article?id={{article.id}}">Edit</a>
-                    <a class="btn btn-info btn-sm btn-delete-article">Delete</a>
-                    <a class="btn btn-info btn-sm btn-change-article-state">Publish/Unpublish</a>
+                    <a class="btn btn-info btn-sm btn-delete-article" data-article="{{article.id}}">Delete</a>
+                    <a class="btn btn-info btn-sm btn-change-article-state" 
+                        data-article="{{article.id}}"
+                        data-article-state="{{article.state}}">
+                        {% if article.state == 1 %}
+                            Publish
+                        {% else %}
+                            Unpublish
+                        {% endif %}
+                    </a>
                 </span>
+                {% endif %}
             </p>
             
-            <hr>
-                <p>
-                    {{ article.content | safe}}
-                </p>
-            <hr>
+            <hr />
+
+            <p>
+                {{ article.content | safe}}
+            </p>
+
+            <div>
+                <span class="btn-set-like btn btn-link"
+                    data-article="{{article.id}}"
+                    {% if article.liked %}
+                    data-liked="1"
+                    {% else %}
+                    data-liked="0"
+                    {% endif %}
+                    data-like-num="{{article.like_num}}"
+                    >
+                    <i class="glyphicon"></i>
+                    <span></span>
+                </span>
+            </div>
+
+            <hr />
 
             <h4>Comments</h4>
 
-            <div class="comment row">
-                <div class="col-md-1">
-                    <img src="/static/img/ghost_person_40x40_v1.png">
-                </div>
-                <div class="col-md-11">
-                    <div><em>2014-10-20 14:23:10</em></div>
+            <div id="comments-container">
 
-                    <o>This article is so awesome. I have to say this at least five times: This article is so awesome. This article is so awesome. This article is so awesome. This article is so awesome. This article is so awesome.</p>
+                {% for comment in article.comments %}
+                <div class="comment row">
+                    <div class="col-md-1">
+                        <img src="{{ comment.user.avatar | default_if_none:'/static/img/ghost_person_40x40_v1.png' }}" style="width:40px;height:40px;">
+                    </div>
+                    <div class="col-md-11">
+                        <div>
+                            <em>{{ comment.time | date:"Y-m-d H:i:s"}} </em> 
+                            {% if comment.user.id == request.session.user.id %}
+                            <small><a class="btn btn-link btn-delete-comment btn-xs" data-comment="{{comment.id}}">Delete</a></small>
+                            {% endif %}
+                        </div>
+                        <p>{{ comment.content }}</p>
+                        
+                    </div>
                 </div>
+                {% endfor %}
             </div>
 
+            {% if request.session.user %}
             <div class="row">
                 <div class="col-md-1">
-                    <img src="/static/img/ghost_person_40x40_v1.png">
+                    <img src="{{ request.session.user.avatar | default_if_none:'/static/img/ghost_person_40x40_v1.png' }}" style="width:40px;height:40px;">
                 </div>
                 <div class="col-md-11">
-                    <textarea cols=100%></textarea> <a class="btn btn-default btn-sm float-left" style="margin-left:5px;">Add comment</a>
+                    <textarea cols=100% id="input-comment"></textarea> <a id="btn-add-comment" class="btn btn-default btn-sm float-left" style="margin-left:5px;" data-article="{{article.id}}">Add comment</a>
                 </div>
             </div>
+            {% endif %}
 
         </div>
 
         <!-- Blog Sidebar Widgets Column -->
         <div class="col-md-4">
-            <div class="well">
-
-                <div>
-                    <img src="/static/img/ghost_person_180x180_v1.png" style="margin-left:20%;width:60%;margin-bottom:10px;"/>
-                    <div style="text-align: center">
-                        <h4><a href="/homepage?id={{article.author.id}}">{{article.author.username}}</a></h4>
-                        <h5>Followers: 20</h5>
-                        <h5>Article number: 120</h5>
-                    </div>
-                </div>
-                
-            </div>
+            {% with article.author as user %}
+                {% include 'includes/user_sidebar_info.html' %}
+            {% endwith %}
 
             <!-- Blog Search Well -->
             <div class="well">
-                <h4>His recent blogs</h4>
-                
-                <div class="blog-list-item-side">
-                    <a href="#">Blog 1</a>
-                </div>
-                <div class="blog-list-item-side">
-                    <a href="#">Blog 2</a>
-                </div>
+                {% if recent_articles %}
+                    <h4>Recent articles</h4>
+                    
+                    <ul>
+                        {% for article in recent_articles %}
+                        <li >
+                            <a class="margin-bottom:10px;" href="/article?id={{article.id}}">{{ article.title }}({{ article.time_create | date:"Y-m-d H:i:s"}})</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
 
+                    <h4>No recent articles</h4>
+
+                {% endif %}
             </div>
 
         </div>
@@ -95,4 +130,146 @@
     </div>
     <!-- /.row -->
 
+{% endblock %}
+
+{% block extra_script %}
+<script type="text/javascript">
+    $('.btn-delete-article').click(function(){
+        var articleId = $(this).data('article');
+        if(confirm('Are you sure to delete this article?')){
+            $.ajax({
+                'url': '/api/article/' + articleId + '/delete',
+                'type': 'POST',
+                'success': function(res){
+                    alert('Deletion successful');
+                    window.location.href = '/homepage';
+                },
+                'error': function(e){
+
+                }
+            });
+        }
+    }); 
+
+    function changeArticleState(articleId, state, callback){
+        $.ajax({
+            url: '/api/article/' + articleId + '/set_state',
+            data: {state: state},
+            success: callback,
+            error: function(e){alert(e); },
+            type: 'POST'
+        });
+    }
+
+    $('.btn-change-article-state').click(function(e){
+        var self = $(this),
+            articleId = self.data('article');
+        if(self.data('article-state') == 1){
+            changeArticleState(articleId, 'published', function(r){
+                self.data('article-state', 2);
+                self.html('Unpublish');
+            });
+        }else if(self.data('article-state') == 2){
+            changeArticleState(articleId, 'draft', function(r){
+                self.data('article-state', 1);
+                self.html('Publish');
+            });
+        }
+    });
+
+    function initBtnSetLike(elem){
+        var liked = elem.data('liked');
+        var classLiked = 'glyphicon-heart', classNotLiked = 'glyphicon-heart-empty';
+        if(liked == 1){
+            elem.find('i').addClass(classLiked).removeClass(classNotLiked);
+        }else{
+            elem.find('i').addClass(classNotLiked).removeClass(classLiked);
+        }
+
+        elem.find('span').html(elem.data('like-num'));
+
+    }
+    $('.btn-set-like').click(function(){
+        var $this = $(this),
+            articleId = $this.data('article');
+
+            
+        var toLike = 1 - parseInt($this.data('liked'));
+
+        $.ajax({
+            type: 'post',
+            url: '/api/article/' + articleId + '/set_like',
+            data: {like: toLike},
+            success: function(res){
+                if(res.error)
+                    alert(res.error);
+                else{
+                    $this.data('liked', toLike);
+                    $this.data('like-num', res.like_num);
+                    initBtnSetLike($this);
+                }
+            },
+            error: function(e){
+
+            },
+            dataType: 'json'
+        })
+    }).each(function(){
+        initBtnSetLike($(this));
+    });
+
+    $('#btn-add-comment').click(function(){
+        var content = $('#input-comment').val();
+        if(!content){
+            alert('Comment content can not be empty');
+            return;
+        }
+
+        var articleId = $(this).data('article');
+        $.ajax({
+            type: 'POST',
+            url: '/api/article/' + articleId + '/comment/add',
+            data: {content: content},
+            success: function(res){
+                if(res.error)
+                    return alert(res.error);
+
+                // Append JS
+                var htmlStr = '<div class="comment row" data-comment="' + res.id + '">' + 
+                                '<div class="col-md-1">' + 
+                                    '<img style="width:40px;height:40px;" src="' + (res.user.avatar || '/static/img/ghost_person_40x40_v1.png') + '">' + 
+                                '</div>' + 
+                                    '<div class="col-md-11">' + 
+                                        '<div><em>' + res.time + '</em><small><a class="btn btn-link btn-delete-comment btn-xs" data-comment="' + res.id + '">Delete</a></small></div>' + 
+                                        '<p>' + res.content + '</p>' + 
+                                    '</div>' + 
+                                '</div>';
+
+                $('#comments-container').prepend(htmlStr);
+                $('#input-comment').val('');
+            },
+            error: function(e){alert(e)},
+            dataType: 'json'
+        });
+    });
+
+    $(document).on('click', '.btn-delete-comment', function(){
+        var $this = $(this);
+        var commentId = $this.data('comment');
+        $.ajax({
+            type: 'POST',
+            url: '/api/article/comment/' + commentId + '/delete',
+            success: function(res){
+                if(res.error)
+                    return alert(res.error);
+
+                $this.parents('.comment:first').detach();
+            },
+            error: function(e){alert(e)},
+            dataType: 'json'
+        });
+    });
+
+    App.initFollowButtons();
+</script>
 {% endblock %}
