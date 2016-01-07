@@ -1,4 +1,7 @@
 
+alltest: 1_basic 2_controller 3_model 4_view 5_user
+
+
 load:
 	cd ../data/; python parse.py rawdata data.jsonl
 	python load_data.py
