@@ -193,11 +193,6 @@ def create_article(request):
 
     return HttpResponse(json.dumps({'article': {'id': article.id}}))
 
-
-<<<<<<< 9bb5269a3452e685c5dd972abc23371553492f8f
-<<<<<<< 1719af997da69b934c2d476b2a0e776efb290812
-
-=======
 def article_operation(author_required=False):
     def decorator(controller):
 
@@ -223,10 +218,6 @@ def article_operation(author_required=False):
         return inner
 
     return decorator
->>>>>>> finish model-article
-=======
-
->>>>>>> finish follow relation
 
 
 @csrf_exempt
@@ -267,21 +258,9 @@ def update_article(request, article_id):
     return HttpResponse(json.dumps({'success': True, 'article': {'id': article.id}}))
 
 
-<<<<<<< 9bb5269a3452e685c5dd972abc23371553492f8f
-<<<<<<< 1719af997da69b934c2d476b2a0e776efb290812
 @csrf_exempt
 @allow_methods(['POST'])
 @article_operation(author_required=True)
-=======
-@allow_methods(['POST'])
-@article_operation(author_required=True)
-@csrf_exempt
->>>>>>> finish model-article
-=======
-@csrf_exempt
-@allow_methods(['POST'])
-@article_operation(author_required=True)
->>>>>>> finish follow relation
 @transaction.atomic
 def delete_article(request, article_id):
     article = Article.objects.get(id=article_id)
@@ -289,10 +268,6 @@ def delete_article(request, article_id):
     article.save()
     return HttpResponse(json.dumps({'success': True}))
 
-
-<<<<<<< 1719af997da69b934c2d476b2a0e776efb290812
-
-
 ###############
 # Follow APIs #
 ###############
@@ -367,81 +342,6 @@ def get_followings(request):
     followings = user.get_followings()
 
     return HttpResponse(json.dumps([{'id': u.id, 'username': u.username} for u in followings]))
-=======
->>>>>>> finish model-article
-
-
-###############
-# Follow APIs #
-###############
-
-@csrf_exempt
-@login_required_otherwise_401
-@allow_methods(['POST'])
-def follow(request):
-    data = request.REQUEST
-    if 'target_user_id' not in data:
-        return HttpResponseBadRequest('target_user_id must be provided')
-
-    target_user = User.objects.find_by_id(int(data['target_user_id']))
-    if target_user is None:
-        return HttpResponseNotFound('target user not found')
-
-    user = User.objects.find_by_id(request.session.get('user')['id'])
-    user.add_following(target_user)
-
-    return HttpResponse(json.dumps({'success': True}))
-
-
-@csrf_exempt
-@login_required_otherwise_401
-@allow_methods(['POST'])
-def unfollow(request):
-    data = request.REQUEST
-    if 'target_user_id' not in data:
-        return HttpResponseBadRequest('target_user_id must be provided')
-
-    target_user = User.objects.find_by_id(int(data['target_user_id']))
-    if target_user is None:
-        return HttpResponseNotFound('target user not found')
-
-    user = User.objects.find_by_id(request.session.get('user')['id'])
-    user.remove_following(target_user)
-
-    return HttpResponse(json.dumps({'success': True}))
-
-@login_required_otherwise_401
-@allow_methods(['GET'])
-def get_followers(request):
-    user_id = request.REQUEST.get('user_id', None)
-    if user_id is None:
-        user_id = request.session.get('user')['id']
-    else:
-        user_id = int(user_id)
-
-    user = User.objects.find_by_id(user_id)
-
-    followers = user.get_followers()
-
-    return HttpResponse(json.dumps([{'id': u.id, 'username': u.username} for u in followers]))
-
-@allow_methods(['GET'])
-@login_required_otherwise_401
-def get_followings(request):
-    user_id = request.REQUEST.get('user_id', None)
-    if user_id is None:
-        user_id = request.session.get('user')['id']
-    else:
-        user_id = int(user_id)
-
-    user = User.objects.find_by_id(user_id)
-
-    followings = user.get_followings()
-
-    return HttpResponse(json.dumps([{'id': u.id, 'username': u.username} for u in followings]))
-
-
-
 
 
 
