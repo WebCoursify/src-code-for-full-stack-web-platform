@@ -2,6 +2,7 @@
 
   <div class="float-right">
     <ul class="pagination pagination-sm" style="margin-top:15px;margin-bottom:10px;">
+
       {% if curr_page > 0 %}
       <li>
         <a href="javascript:;" class="pager-button" data-page="0" aria-label="First">
@@ -37,6 +38,7 @@
   </div>
 
   <div class="float-right" style="margin-top: 20px;margin-right: 15px;">
+
     Item per page:
     <select id="select-count-per-page">
       <option {% if count == 10 %} selected="selected" {% endif %}>10</option>

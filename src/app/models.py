@@ -19,6 +19,7 @@ class User(models.Model):
     password = models.CharField(max_length=50)
     description = models.CharField(max_length=512, null=True)
     role     = models.SmallIntegerField()
+
     avatar   = models.CharField(max_length=512, null=True)
     follows  = models.ManyToManyField('User')
     deleted  = models.BooleanField(default=0)
@@ -147,6 +148,7 @@ class Article(models.Model):
 
     objects  = ArticleManager()
     author   = models.ForeignKey('User', related_name='author')
+
     title    = models.CharField(max_length=100)
     content  = models.TextField()
     time_create = models.DateTimeField()

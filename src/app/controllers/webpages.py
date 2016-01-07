@@ -5,6 +5,9 @@ import math
 from django.db.models import Q
 from django.db import connection
 
+from controller_common import get_argument
+
+
 def login_required(controller):
     def inner(request):
         if 'user' not in request.session:
@@ -141,7 +144,7 @@ def people(request):
 
 
 def user_homepage(request):
-    uid = request.REQUEST.get('id', None)
+    uid = get_argument(request, 'id', None)
     if uid is None:
         if 'user' in request.session:
             user = User.objects.filter(deleted=0, id=request.session.get('user')['id'])
