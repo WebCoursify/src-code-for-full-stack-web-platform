@@ -6,6 +6,7 @@ import json
 from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
 import hashlib
+from controller_common import get_argument
 
 def md5(stream):
     m = hashlib.md5()
@@ -20,10 +21,9 @@ def login_required_otherwise_401(controller):
             return controller(request)
     return inner
 
-
 def login(request):
-    email = request.REQUEST.get('email', None)
-    password = request.REQUEST.get('password', None)
+    email = get_argument(request, 'email', None)
+    password = get_argument(request, 'password', None)
     if email is None or password is None:
         return HttpResponseBadRequest('email and password required')
 
@@ -91,9 +91,9 @@ def create_article(request):
     :return: json, in form of {'success': True, 'article': {'id': ...}} or {'error': <error message>}
     """
     user = request.session.get('user')
-    title = request.REQUEST['title']
-    content = request.REQUEST['content']
-    state = request.REQUEST['state']
+    title = get_argument(request, 'title')
+    content = get_argument(request, 'content')
+    state = get_argument(request, 'state')
 
     if state not in ('published', 'draft'):
         return HttpResponseBadRequest('invalid state')

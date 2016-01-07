@@ -3,6 +3,7 @@ from django.shortcuts import render_to_response, redirect
 from app.models import *
 import math
 
+from controller_common import get_argument
 
 def login_required(controller):
     def inner(request):
