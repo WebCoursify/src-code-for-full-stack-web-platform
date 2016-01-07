@@ -63,7 +63,7 @@ def people(request):
 
 
 def user_homepage(request):
-    uid = request.REQUEST.get('id', None)
+    uid = get_argument(request, 'id', None)
     if uid is None:
         if 'user' in request.session:
             user = User.objects.filter(deleted=0, id=request.session.get('user')['id'])
