@@ -202,18 +202,21 @@ def update_article(request, article_id):
     :return: json, {"success": True} or {"error": <error message>}
     """
     article = Article.objects.get(id=int(article_id))
-    data = request.REQUEST
-    if 'title' in data:
-        article.title = data['title']
-        print article.title, article_id
+    
+    title = get_argument(request, 'title')
+    content = get_argument(request, 'content')
+    state = get_argument(request, 'state')
 
-    if 'content' in data:
-        article.content = data['content']
+    if title is not None:
+        article.title = title
 
-    if 'state' in data:
-        if data['state'] not in ('published', 'draft'):
+    if content is not None:
+        article.content = content
+
+    if state is not None:
+        if state not in ('published', 'draft'):
             return HttpResponseBadRequest('invalid state')
-        if data['state'] == 'published':
+        if state == 'published':
             article.state = Article.STATE_PUBLISHED
         else:
             article.state = Article.STATE_UNPUBLISHED
@@ -247,14 +250,14 @@ def delete_article(request, article_id):
 @login_required_otherwise_401
 @allow_methods(['POST'])
 def follow(request):
-    data = request.REQUEST
-    if 'target_user_id' not in data:
+    target_user_id = get_argument(request, 'target_user_id')
+    if target_user_id is None:
         return HttpResponseBadRequest('target_user_id must be provided')
 
-    if int(data['target_user_id']) == request.session.get('user')['id']:
+    if int(target_user_id) == request.session.get('user')['id']:
         return HttpResponseBadRequest('Cannot do this to oneself')
 
-    target_user = User.objects.find_by_id(int(data['target_user_id']))
+    target_user = User.objects.find_by_id(int(target_user_id))
     if target_user is None:
         return HttpResponseNotFound('target user not found')
 
@@ -268,14 +271,14 @@ def follow(request):
 @login_required_otherwise_401
 @allow_methods(['POST'])
 def unfollow(request):
-    data = request.REQUEST
-    if 'target_user_id' not in data:
+    target_user_id = get_argument(request, 'target_user_id')
+    if target_user_id is None:
         return HttpResponseBadRequest('target_user_id must be provided')
 
-    if int(data['target_user_id']) == request.session.get('user')['id']:
+    if int(target_user_id) == request.session.get('user')['id']:
         return HttpResponseBadRequest('Cannot do this to oneself')
 
-    target_user = User.objects.find_by_id(int(data['target_user_id']))
+    target_user = User.objects.find_by_id(int(target_user_id))
     if target_user is None:
         return HttpResponseNotFound('target user not found')
 
@@ -287,7 +290,7 @@ def unfollow(request):
 @login_required_otherwise_401
 @allow_methods(['GET'])
 def get_followers(request):
-    user_id = request.REQUEST.get('user_id', None)
+    user_id = get_argument(request, 'user_id')
     if user_id is None:
         user_id = request.session.get('user')['id']
     else:
@@ -302,7 +305,7 @@ def get_followers(request):
 @allow_methods(['GET'])
 @login_required_otherwise_401
 def get_followings(request):
-    user_id = request.REQUEST.get('user_id', None)
+    user_id = get_argument(request, 'user_id')
     if user_id is None:
         user_id = request.session.get('user')['id']
     else:
